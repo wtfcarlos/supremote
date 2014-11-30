@@ -1,0 +1,11 @@
+Django==1.7.1
+psycopg2==2.5.2
+django-bootstrap3==4.11.0
+django-compressor==1.4
+django-debug-toolbar==1.2.1
+gunicorn==18.0
+Fabric==1.8.1
+django-braces==1.4.0
+django-extensions==1.4.0
+django-grappelli==2.6.1
+pytz==2014.4
