@@ -109,6 +109,9 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
 
     'core',
+    'fields',
+    'remotes',
+    'users',
     'bootstrap3',
 )
 
