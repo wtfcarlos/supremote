@@ -5,12 +5,12 @@ Built for developers.
 Built for end users.
 Everything is sent over HTTPS.
 
-* $3.99/mo tubular(v1) features (limit=1, 1mup)
-* $7.99/mo way cool(v2) features (limit=5, 2mup)
-* $9.99/mo radical(v3,v4) features (limit=10, 5mup)
-* $11.99/mo guru(v5) (limit=15, 10mup)
-* $15.99/mo mondo(v6) (limit=20, 20mup)
-* $18.99/mo gnarly(v7) (limit=50, up to 50 multiuser pool)
+* $3.99/mo tubular  (v1)  features (limit=1, 1mup)
+* $7.99/mo way cool (v2)  features (limit=5, 2mup)
+* $9.99/mo radical  (v3,v4) features (limit=10, 5mup)
+* $11.99/mo groovy  (v5) (limit=15, 10mup)
+* $15.99/mo mondo   (v6) (limit=20, 20mup)
+* $18.99/mo special (v7) (limit=50, up to 50 multiuser pool)
 
 extra $0.50 per month per extra multiuser in pool
 
