@@ -112,6 +112,7 @@ INSTALLED_APPS = (
     'fields',
     'remotes',
     'users',
+    'invitations',
     'bootstrap3',
 )
 
@@ -145,6 +146,19 @@ COMPRESS_PRECOMPILERS = (
     ('text/x-sass', 'sass --scss --compass {infile} {outfile}'),
     ('application/dart', 'dart2js --out={outfile} {infile} -m'),
 )
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+MANDRILL_API_KEY = "NtH9zbLzVF269Nhxkq0qig"
+EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

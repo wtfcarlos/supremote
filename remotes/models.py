@@ -6,8 +6,11 @@ from users import models as users
 
 class Remote(TimeStampedModel):
 	name = models.CharField(max_length=100)
-	developer = models.ForeignKey(users.Developer)
+	key = models.SlugField(max_length=120)
+	developer = models.ForeignKey(users.User, related_name="developer")
 	configuration = models.TextField()
+
+	users = models.ManyToManyField(users.User)
 
 	def __unicode__(self):
 		return self.name

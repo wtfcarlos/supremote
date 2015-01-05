@@ -4,11 +4,11 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-sm-12">
-			<h1>Create a Remote</h1>
+			<h1>Edit Remote - {{ remote }}</h1>
 				<form action="" method="POST">
 					{% csrf_token %}
 					{% bootstrap_form form %}
-					<button class="btn btn-primary btn-block" type="submit">Create</button>
+					<button class="btn btn-primary btn-block" type="submit">Edit</button>
 				</form>
 			</div>
 		</div>

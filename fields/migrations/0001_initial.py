@@ -9,6 +9,7 @@ import django_extensions.db.fields
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('remotes', '__first__'),
     ]
 
     operations = [
@@ -19,8 +20,9 @@ class Migration(migrations.Migration):
                 ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
                 ('key', models.CharField(max_length=100)),
-                ('value', models.BooleanField()),
+                ('value', models.BooleanField(default=None)),
                 ('default', models.BooleanField(default=False)),
+                ('remote', models.ForeignKey(to='remotes.Remote')),
             ],
             options={
                 'abstract': False,
@@ -34,6 +36,7 @@ class Migration(migrations.Migration):
                 ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
                 ('key', models.CharField(max_length=100)),
+                ('remote', models.ForeignKey(to='remotes.Remote')),
             ],
             options={
                 'abstract': False,
@@ -50,6 +53,7 @@ class Migration(migrations.Migration):
                 ('lower', models.SmallIntegerField(default=1)),
                 ('upper', models.SmallIntegerField(default=10)),
                 ('value', models.SmallIntegerField(default=5)),
+                ('remote', models.ForeignKey(to='remotes.Remote')),
             ],
             options={
                 'abstract': False,
@@ -75,6 +79,7 @@ class Migration(migrations.Migration):
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
                 ('key', models.CharField(max_length=100)),
                 ('value', models.CharField(max_length=140)),
+                ('remote', models.ForeignKey(to='remotes.Remote')),
             ],
             options={
                 'abstract': False,
@@ -84,7 +89,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='multiplechoicefield',
             name='value',
-            field=models.ForeignKey(to='fields.TextChoice'),
+            field=models.ForeignKey(blank=True, to='fields.TextChoice', null=True),
             preserve_default=True,
         ),
     ]

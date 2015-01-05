@@ -1,0 +1,70 @@
+{% extends "core/titled_page.html" %}
+{% load bootstrap3 %}
+
+
+{% block extra_js %}
+	<script>
+
+	function deleteUser(userId) {
+		var deletionForm = $('#user-delete-form');
+		var userIdInput = $('#user-id-input');
+		userIdInput.val(userId);
+		deletionForm.submit();
+	}
+
+		$(document).ready(function() {
+			$('[data-toggle="tooltip"]').tooltip();
+			$('.user-delete-button').click(function() {
+				var clickedUserId = $(this).attr('id');
+
+				swal({
+					title: "Are You Sure?",
+					text: "This user will unassigned from this remote.",
+					type: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#DD6B55",
+					confirmButtonText: "Yes, delete it!",
+					closeOnConfirm: false
+				}, function() {
+					deleteUser(clickedUserId);
+				});
+
+			});
+		});
+
+	</script>
+{% endblock extra_js %}
+
+{% block header %}
+	Manage Users - {{ remote }}
+{% endblock header %}
+
+{% block inner_content %}
+
+	{% for user in remote.users.all %}
+		{% with user as user %}
+			{% include "core/remote_user_entry.html" %}
+		{% endwith %}
+	{% empty %}
+	<p class="text-center">This remote has no users. Invite someone below.</p>
+	{% endfor %}
+
+
+	<hr>
+	<div class="row">
+		<div class="col-sm-12">
+			<h3>Invite a user by email</h3>
+			<form action="" method="POST" novalidate>
+				{% csrf_token %}
+				{% bootstrap_form form %}
+				<button class="btn btn-primary btn-block" type="submit">Send Invitation</button>
+			</form>
+		</div>
+	</div>	
+
+	<form id="user-delete-form" action="#" method="POST">
+			{% csrf_token %}
+			<input type="hidden" value="" name="user_id" id="user-id-input">
+		</form>
+
+{% endblock inner_content %}

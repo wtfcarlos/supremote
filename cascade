@@ -1,0 +1,17 @@
+BEGIN;
+TRUNCATE "django_admin_log", "auth_permission", "auth_group", "auth_group_permissions", "django_session", "auth_user_groups", "auth_user_user_permissions", "fields_numberchoicefield", "fields_textfield", "fields_booleanfield", "fields_textchoice", "fields_multiplechoicefield", "users_user", "django_site", "remotes_remote", "auth_user", "remotes_remote_users", "django_content_type" CASCADE;
+SELECT setval(pg_get_serial_sequence('"auth_permission"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"auth_group"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"auth_user"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"django_content_type"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"django_site"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"django_admin_log"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"fields_textfield"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"fields_multiplechoicefield"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"fields_textchoice"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"fields_booleanfield"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"fields_numberchoicefield"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"remotes_remote"','id'), 1, false);
+SELECT setval(pg_get_serial_sequence('"users_user"','id'), 1, false);
+
+COMMIT;

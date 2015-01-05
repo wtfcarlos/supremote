@@ -4,8 +4,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django_extensions.db.models import TimeStampedModel
 
-class Developer(TimeStampedModel):
+class User(TimeStampedModel):
 	auth_user = models.ForeignKey(User, unique=True)
 
 	def __unicode__(self):
-		return '{} - Developer'.format(self.auth_user)
+		return self.auth_user.__unicode__()

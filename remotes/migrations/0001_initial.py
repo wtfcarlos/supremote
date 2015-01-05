@@ -9,6 +9,7 @@ import django_extensions.db.fields
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('users', '0001_initial'),
     ]
 
     operations = [
@@ -19,7 +20,10 @@ class Migration(migrations.Migration):
                 ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
                 ('name', models.CharField(max_length=100)),
+                ('key', models.SlugField(max_length=120)),
                 ('configuration', models.TextField()),
+                ('developer', models.ForeignKey(to='users.User')),
+                ('users', models.ManyToManyField(related_name='+', to='users.User')),
             ],
             options={
                 'ordering': ('-modified', '-created'),
