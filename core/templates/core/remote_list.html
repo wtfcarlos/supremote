@@ -1,0 +1,58 @@
+{% extends "core/titled_page.html" %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block extra_js %}
+	<script>
+
+	function deleteRemote(remoteId) {
+		var deletionForm = $('#remote-delete-form');
+		var remoteIdInput = $('#remote-id-input');
+		remoteIdInput.val(remoteId);
+		deletionForm.submit();
+	}
+
+		$(document).ready(function() {
+			$('[data-toggle="tooltip"]').tooltip();
+			$('.remote-delete-button').click(function() {
+				var clickedRemoteId = $(this).attr('id');
+
+				swal({
+					title: "Are you sure?",
+					text: "This Remote will be deleted, its REST API will become unaccesible, and its REST hooks will cease firing effective immediately.",
+					type: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#DD6B55",
+					confirmButtonText: "Yes, delete it!",
+					closeOnConfirm: false
+				}, function() {
+					deleteRemote(clickedRemoteId);
+				});
+
+			});
+		});
+
+	</script>
+{% endblock extra_js %}
+
+{% block header %}
+	Remotes <a href="{% url 'core:remote_create' %}">
+	<button class="btn btn-primary pull-right"><span class="glyphicon glyphicon-plus"></span> Create Remote</button>
+	</a>
+{% endblock header %}
+
+
+{% block inner_content %}
+
+		{% for remote in remote_list %}
+			{% with remote as remote %}
+			    {% include "core/remote_list_entry.html" %}
+			{% endwith %}
+		{% endfor %}
+
+		<form id="remote-delete-form" action="{% url 'core:remote_delete' %}" method="POST">
+			{% csrf_token %}
+			<input type="hidden" value="" name="remote_id" id="remote-id-input">
+		</form>
+
+{% endblock inner_content %}
