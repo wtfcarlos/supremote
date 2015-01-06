@@ -14,3 +14,10 @@ class Remote(TimeStampedModel):
 
 	def __unicode__(self):
 		return self.name
+
+	def get_pending_invitations(self):
+		return self.invitation_set.filter(
+			remote=self,
+			accepted=False,
+			declined=False
+		)

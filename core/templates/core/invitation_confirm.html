@@ -1,0 +1,64 @@
+{% extends "core/titled_page.html" %}
+{% load bootstrap3 %}
+
+
+{% block extra_js %}
+	<script>
+
+	</script>
+{% endblock extra_js %}
+
+{% block header %}
+	{% if correct_email %}
+		You're In!
+	{% else %}
+		Oops!
+	{% endif %}
+{% endblock header %}
+
+{% block inner_content %}
+
+	{% if correct_email %}
+		<div class="row">
+			<div class="col-sm-12">
+				<p>
+					<b>{{ remote.developer.auth_user.get_full_name }}</b> has invited you to use the <b>{{ remote }}</b> remote. Would you like to accept this invitation?
+				</p>
+			</div>
+			
+
+			
+			
+		</div>
+
+		<form action="" method="POST">
+			{% csrf_token %}
+
+			<div class="row">
+				<div class="col-xs-6">
+					<button class="btn btn-block btn-danger" name="action" value="decline" type="submit">Decline</button>
+				</div>
+
+				<div class="col-xs-6">
+					<button class="btn btn-block btn-success" name="action" value="accept" type="submit">Accept</button>
+				</div>
+			</div>
+
+		</form>
+
+		
+		
+	{% else %}
+		<div class="row">
+			<div class="col-sm-12">
+				<p>
+					Looks like this invitation is not for you! Sorry!
+				</p>
+			</div>
+		</div>
+	{% endif %}
+
+	
+	
+
+{% endblock inner_content %}

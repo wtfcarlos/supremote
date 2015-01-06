@@ -44,9 +44,17 @@
 
 {% block inner_content %}
 
+		<h3>My Remotes</h3>
 		{% for remote in remote_list %}
 			{% with remote as remote %}
 			    {% include "core/remote_list_entry.html" %}
+			{% endwith %}
+		{% endfor %}
+
+		<h3>Accesible Remotes</h3>
+		{% for remote in accesible_remote_list %}
+			{% with remote as remote %}
+			    {% include "core/accesible_remote_list_entry.html" %}
 			{% endwith %}
 		{% endfor %}
 

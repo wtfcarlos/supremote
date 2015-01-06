@@ -15,6 +15,10 @@ urlpatterns = patterns('',
 
   url(r'^invitation/(?P<nonce>[\w-]+)/$', views.InvitationAcceptView.as_view(), name="invitation_link"),
 
+  url(r'^invitation/(?P<invitation_id>\d+)/resend/$', views.ResendInvitationView.as_view(), name="resend_invitation"),
+
+  url(r'^remote/user/delete/$', views.DeleteUserRemoteView.as_view(), name="remove_remote_user"),
+
   url(r'^logout/$', views.LogoutView.as_view(), name="logout"),
 
 )

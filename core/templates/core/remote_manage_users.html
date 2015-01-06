@@ -5,9 +5,11 @@
 {% block extra_js %}
 	<script>
 
-	function deleteUser(userId) {
+	function deleteUser(userId, remoteId) {
 		var deletionForm = $('#user-delete-form');
 		var userIdInput = $('#user-id-input');
+		var remoteIdInput = $('#remote-id-input');
+		remoteIdInput.val(remoteId);
 		userIdInput.val(userId);
 		deletionForm.submit();
 	}
@@ -16,17 +18,17 @@
 			$('[data-toggle="tooltip"]').tooltip();
 			$('.user-delete-button').click(function() {
 				var clickedUserId = $(this).attr('id');
-
+				var remoteId = $(this).attr('data-remote-id');
 				swal({
 					title: "Are You Sure?",
 					text: "This user will unassigned from this remote.",
 					type: "warning",
 					showCancelButton: true,
 					confirmButtonColor: "#DD6B55",
-					confirmButtonText: "Yes, delete it!",
+					confirmButtonText: "Yes, remove them!",
 					closeOnConfirm: false
 				}, function() {
-					deleteUser(clickedUserId);
+					deleteUser(clickedUserId, remoteId);
 				});
 
 			});
@@ -41,19 +43,50 @@
 
 {% block inner_content %}
 
+	<h3>Assigned Users</h3>
 	{% for user in remote.users.all %}
 		{% with user as user %}
-			{% include "core/remote_user_entry.html" %}
+		{% with remote as remote %}
+		   	{% include "core/remote_user_entry.html" %} 
+		{% endwith %}
 		{% endwith %}
 	{% empty %}
-	<p class="text-center">This remote has no users. Invite someone below.</p>
+	<p class="text-center">This remote has no users.</p>
 	{% endfor %}
 
 
 	<hr>
+
 	<div class="row">
 		<div class="col-sm-12">
-			<h3>Invite a user by email</h3>
+			<h3>Pending Invitations</h3>
+			<table class="table table-responsive">
+				<tr>
+					<th>Email</th>
+					<th>Sent</th>
+					<th>Resend Invitation</th>
+				</tr>
+				{% for invitation in remote.get_pending_invitations %}
+					<tr>
+						<td>{{ invitation.to }}</td>
+						<td>{{ invitation.last_sent_date }}</td>
+						<td>
+						<a href="{% url "core:resend_invitation" invitation_id=invitation.pk %}"><button class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-repeat"></span></button></a></td>
+					</tr>
+					{% empty %}
+					<tr>
+						<td class="text-center" colspan="3">
+						<p>No Pending Invitations</p>
+						</td>
+					</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-12">
+			<h3>Invite a user</h3>
 			<form action="" method="POST" novalidate>
 				{% csrf_token %}
 				{% bootstrap_form form %}
@@ -62,9 +95,10 @@
 		</div>
 	</div>	
 
-	<form id="user-delete-form" action="#" method="POST">
-			{% csrf_token %}
-			<input type="hidden" value="" name="user_id" id="user-id-input">
-		</form>
+	<form id="user-delete-form" action="{% url 'core:remove_remote_user' %}" method="POST">
+	{% csrf_token %}
+	<input type="hidden" value="" name="user_id" id="user-id-input">
+	<input type="hidden" value="" name="remote_id" id="remote-id-input">
+	</form>
 
 {% endblock inner_content %}
