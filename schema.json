@@ -2,24 +2,31 @@
 	"$schema": "http://json-schema.org/draft-04/schema#",
 	"type": "object",
 
-	"patternProperties": {
-		"^[\\w_-]+$": {
-		  "type": "object",
-			"oneOf": [
-				{ "$ref": "#/definitions/text-entry" },
-				{ "$ref": "#/definitions/number-entry" },
-				{ "$ref": "#/definitions/boolean-entry" },
-				{ "$ref": "#/definitions/multiple-entry" },
-				{ "$ref": "#/definitions/action-entry" }
-		  	]
-		}
+	"properties": {
+		"fields": { "$ref": "#/definitions/field-list" }
 	},
+
+	
 
 	"definitions": {
 
+		"field-list": {
+			"patternProperties": {
+				"^[\\w_-]+$": {
+		  		"type": "object",
+				"oneOf": [
+					{ "$ref": "#/definitions/text-entry" },
+					{ "$ref": "#/definitions/number-entry" },
+					{ "$ref": "#/definitions/boolean-entry" },
+					{ "$ref": "#/definitions/multiple-entry" },
+					{ "$ref": "#/definitions/action-entry" }
+		  			]
+				}
+			}
+		},
+
 		"description": {
-			"type": "string",
-			"pattern": "^\\s\\w-_*$"
+			"type": "string"
 		},
 
 		"text-entry": {
@@ -69,8 +76,7 @@
 					"minItems": 1,
 					"maxItems": 32,
 					"items": {
-						"type": "string",
-						"pattern": "^[\\s\\w-_]+$"
+						"type": "string"
 					}
 				}
 			},
