@@ -1,5 +1,35 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block extra_js %}
+	
+	<script src="{% static "js/ace/ace.js" %}"></script>
+
+	<script>
+		$(document).ready(function() {
+
+			 $('#editor').html($('.remote-configuration').val());
+
+			var editor = ace.edit("editor");
+			editor.setTheme("ace/theme/xcode");
+			editor.getSession().setMode("ace/mode/json");
+
+			$('#editor').insertAfter('.remote-configuration');
+			$('.remote-configuration').css("display", "none");
+
+		});
+
+		$('#configuration-submit').click(function() {
+
+			var value = ace.edit("editor").getValue();
+			$('.remote-configuration').html(value);
+			$('#remote-configuration-form').submit();
+
+		});
+
+	</script>
+{% endblock extra_js %}
 
 {% block extra_css %}
 	
@@ -7,6 +37,12 @@
 		.remote-configuration {
 			font-family: Courier;
 		}
+
+		#editor {
+    		/** Setting height is also important, otherwise editor wont showup**/
+    		height: 450px;
+		}
+
 	</style>
 
 {% endblock extra_css %}
@@ -16,11 +52,13 @@
 		<div class="row">
 			<div class="col-sm-12">
 			<h1>Edit Remote - {{ remote }}</h1>
-				<form action="" method="POST">
+				<form action="" method="POST" id="remote-configuration-form">
 					{% csrf_token %}
 					{% bootstrap_form form %}
-					<button class="btn btn-primary btn-block" type="submit">Edit</button>
+					<div id="editor"></div>
+					
 				</form>
+				<button class="btn btn-primary btn-block" id="configuration-submit">Edit</button>
 			</div>
 		</div>
 	</div>
