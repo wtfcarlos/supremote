@@ -32,11 +32,12 @@
             <li class="dropdown">
               <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="download">Welcome, <strong>{{ request.user }}</strong> <span class="caret"></span></a>
               <ul class="dropdown-menu" aria-labelledby="user-menu">
-                <li><a href="{% url 'core:logout' %}">Logout</a></li>
+                
                 {% if request.user.is_superuser %}
                   <li><a target="_blank" href="/admin/">Admin Site</a></li>
                 {% endif %}
                 <li><a href="#">Account</a></li>
+                <li><a href="{% url 'core:logout' %}">Logout</a></li>
               </ul>
             </li>
           </ul>

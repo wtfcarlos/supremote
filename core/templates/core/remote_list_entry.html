@@ -1,13 +1,13 @@
 {% load bootstrap3 %}
 <div class="row">
 	<div class="col-sm-8 col-xs-6">
-		<h4><a href="#">{{ remote.name }}</a></h4>
+		<h4><a href="{{ remote.get_absolute_url }}">{{ remote.name }}</a></h4>
 	</div>
 	<div class="col-sm-4 col-xs-6">
 		<div class="pull-right">
 			<a href="{% url "core:remote_edit" remote_key=remote.key remote_id=remote.pk %}">
 				<button class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Edit Configuration">
-				<span class="pull-right glyphicon glyphicon-pencil" aria-hidden="true"></span>
+				<span class="pull-right glyphicon glyphicon-cog" aria-hidden="true"></span>
 				</button>
 			</a>
 			<a href="{% url "core:remote_manage_users" remote_key=remote.key remote_id=remote.pk %}">

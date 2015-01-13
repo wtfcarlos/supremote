@@ -5,11 +5,20 @@ from . import views
 
 urlpatterns = patterns('',
   url(r'^$', views.IndexView.as_view(), name="index"),
+  url(r'^actions/$', views.TestActionReceiveView, name="actions"),
+  url(r'^endpoint_process/$', views.TestEndpointProcessView, name="test_endpoint"),
+
+  url(r'^signup/$', views.SignupView.as_view(), name="signup"),
   url(r'^remotes/$', views.RemoteListView.as_view(), name="remote_list"),
   url(r'^remote/create/$', views.CreateRemoteView.as_view(), name="remote_create"),
   url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/edit/$', views.EditRemoteView.as_view(), name="remote_edit"),
 
   url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/users/$', views.ManageUsersRemoteView.as_view(), name="remote_manage_users"),
+
+  url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/$', views.RemoteDetailView.as_view(), name="remote_detail"),
+
+  url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/trigger_action/$', views.RemoteTriggerActionView.as_view(), name="remote_trigger_action"),
+
 
   url(r'^remote/delete/$', views.DeleteRemoteView.as_view(), name="remote_delete"),
 

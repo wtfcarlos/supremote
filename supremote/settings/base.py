@@ -140,6 +140,8 @@ DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
 }
 
+ENCRYPTED_FIELDS_KEYDIR = os.path.join(PROJECT_ROOT, 'fieldkeys')
+
 # django-compressor settings
 COMPRESS_PRECOMPILERS = (
     ('text/coffeescript', 'coffee --compile --stdio'),

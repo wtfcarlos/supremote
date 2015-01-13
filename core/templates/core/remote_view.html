@@ -1,0 +1,60 @@
+{% extends "core/titled_page.html" %}
+{% load bootstrap3 %}
+
+{% block header %}
+	{{ remote }}
+{% endblock header %}
+
+{% block extra_js %}
+	
+	<script type="text/javascript">
+
+	$(document).ready(function() {
+
+		$('.action-btn').click(function(e) {
+			e.preventDefault();
+			$(this).attr('disabled','disabled');
+			var action_id = $(this).attr('id');
+			var action_form = $("#action_form");
+			var action_id_field = $("#action_id");
+
+			action_id_field.attr("value", action_id);
+			action_form.submit();
+
+		});
+
+	});
+
+	
+
+	</script>
+
+{% endblock extra_js %}
+
+{% block inner_content %}
+	<p>
+
+		<form action="" method="POST" novalidate>
+			{% csrf_token %}
+			{% for field_item in remote_fields %}
+
+				{% if field_item.item_type == 'form' %}
+					{% bootstrap_form field_item.field %}
+				{% else %}
+					<button id="remote-action-{{ field_item.key }}" class="action-btn btn btn-{{ field_item.field.class }} btn-md">{{ field_item.field.title }}</button>
+					<span class="help-block">{{ field_item.field.description }}
+			</span>
+				{% endif %}
+				
+			{% endfor %}
+			<button class="btn btn-block btn-primary" type="submit">Submit</button>
+			
+		</form>
+
+		<form method="POST" id="action_form" action="{% url "core:remote_trigger_action" remote_id=remote.pk remote_key=remote.key %}">
+			{% csrf_token %}
+			<input type="hidden" name="action_id" id="action_id" value="" />
+		</form>
+
+	</p>
+{% endblock inner_content %}

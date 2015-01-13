@@ -48,8 +48,14 @@ class Invitation(TimeStampedModel):
 	def send_email(self):
 		self.last_sent_date = timezone.now()
 		self.save()
-		message = EmailMessage(subject="Supremote Invitation", from_email="noreply@supremote.com", to=[self.to,])
+		message = EmailMessage(
+			subject="Supremote Invitation",
+			from_email="noreply@supremote.com",
+			to=[self.to,]
+		)
+
 		message.body = "You have been invited to a supremote!\nPlease follow this link: http://localhost:8111{}".format(self.get_absolute_url())
+		
 		message.send()
 
 

@@ -1,0 +1,11 @@
+TODO
+
+Little:
+- Save form values in redis cache on submit
+- Retrieve form values in redis cache on load
+- Add default value on load to boolean.
+- Make separate login and sign in screens.
+
+Big:
+- Make the dynamic REST API
+- Manage REST endpoints per remote

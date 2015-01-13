@@ -2,15 +2,22 @@
 from __future__ import unicode_literals
 from django.views import generic
 from django.core.urlresolvers import reverse_lazy, reverse
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail, EmailMessage
+from django.core.cache import get_cache
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.shortcuts import redirect, get_object_or_404
 from django.template import RequestContext
-from django.http import HttpResponseForbidden
-from braces.views import LoginRequiredMixin
+from django.http import HttpResponseForbidden, HttpResponse
+from django.utils import timezone
+from braces.views import LoginRequiredMixin, UserPassesTestMixin
 
+import json
+import collections
+import datetime
 
 from users import models as users
 from fields import models as fields
@@ -18,64 +25,112 @@ from remotes import models as remotes
 from invitations import models as invitations
 
 from . import forms
+from . import util
 
+@csrf_exempt
+def TestActionReceiveView(request):
+	import hmac
+	remote_secret = '930ac87c-d163-4565-9a7d-f450b5fb1896'
+
+	print 'REQUEST SIGNATURE: {}'.format(request.META['HTTP_X_SUPREMOTE_SIGNATURE'])
+	
+	print 'CALCULATED SIGNATURE: {}'.format(
+		hmac.new(request.body, remote_secret).hexdigest()
+	)
+
+	return HttpResponse()
+
+@csrf_exempt
+def TestEndpointProcessView(request):
+	import hmac
+	remote_secret = '930ac87c-d163-4565-9a7d-f450b5fb1896'
+
+	print 'REQUEST SIGNATURE: {}'.format(request.META['HTTP_X_SUPREMOTE_SIGNATURE'])
+	
+	print 'CALCULATED SIGNATURE: {}'.format(
+		hmac.new(request.body, remote_secret).hexdigest()
+	)
+
+	return HttpResponse()
 
 class SupremoteLoginRequiredMixin(LoginRequiredMixin):
 	login_url = reverse_lazy("core:index")
 
+class AuthorizedRemoteLoginRequiredMixin(LoginRequiredMixin):
 
-class IndexView(generic.TemplateView):
+	def get_app_user(self, user):
+		app_user = users.User.objects.get(auth_user=user)
+		return app_user
 
-	template_name = "core/index.html"
+	def get_remote(self):
+		# Override if necessary.
+		return self.get_object()
+
+	def dispatch(self, request, *args, **kwargs):
+		app_user = self.get_app_user(request.user)
+		remote = self.get_remote()
+		if app_user in remote.users.all() or app_user == remote.developer:
+			return super(AuthorizedRemoteLoginRequiredMixin, self).dispatch(request, *args, **kwargs)
+		else:
+			return HttpResponseForbidden()
+
+class RedirectIfLoggedInViewMixin(object):
 
 	def get(self, request, *args, **kwargs):
 		if request.user.is_authenticated():
 			return redirect(reverse('core:remote_list'))
-		return super(IndexView, self).get(request, *args, **kwargs)
+		return super(RedirectIfLoggedInViewMixin, self).get(request, *args, **kwargs)
 
-	def get_context_data(self, **kwargs):
-		context = super(IndexView, self).get_context_data(**kwargs)
+class SignupView(RedirectIfLoggedInViewMixin, generic.FormView):
+	template_name = "core/signup.html"
+	form_class = forms.SignupForm
+	success_url = reverse_lazy('core:remote_list')
 
-		context['signup_form'] = forms.SignupForm(data=self.request.POST or None)
-		context['login_form'] = AuthenticationForm(self.request, self.request.POST or None)
+	def form_valid(self, form):
 
-		return context
+		signup_password = form.cleaned_data['password1']
+		email = form.cleaned_data['email']
 
-	def post(self, request, *args, **kwargs):
-		context = self.get_context_data(**kwargs)
-		redirect_url = None
+		user_count = users.User.objects.filter(
+				auth_user__email = email
+		).count()
 
-		if 'action' in request.POST:
-			user = None
+		if user_count == 0:
+			user = form.save()
+			user = authenticate(username=user.username, password=signup_password)
+			app_user = users.User(auth_user=user)
+			app_user.save()
 
-			if request.POST['action'] == 'login':
-				login_form = context['login_form']
+			login(self.request, user)
+		else:
+			raise ValidationError("There is already a User with the given email.")
 
-				if login_form.is_valid():
-					user = login_form.get_user()
+		
+		return super(SignupView, self).form_valid(form)
 
-			elif request.POST['action'] == 'sign-up':
-				signup_form = context['signup_form']
 
-				if signup_form.is_valid():
-					signup_password = signup_form.cleaned_data['password1']
-					user = signup_form.save()
-					user = authenticate(username=user.username, password=signup_password)
-					app_user = users.User(auth_user=user)
-					app_user.save()
+
+		
+					
 					
 
-			if user is not None:
-				login(self.request, user)
-				if 'next' in self.request.GET:
-					redirect_url = self.request.GET['next']
-				else:
-					redirect_url = reverse('core:remote_list')
-			else:
-				redirect_url = reverse('core:index')
+class IndexView(RedirectIfLoggedInViewMixin, generic.FormView):
 
-		return redirect(redirect_url, context_instance=RequestContext(request))
+	template_name = "core/index.html"
 
+	def get_form(self, form_class):
+		return AuthenticationForm(self.request, self.request.POST or None)
+
+	def form_valid(self, form):
+		user = form.get_user()
+		login(self.request, user)
+
+		if 'next' in self.request.GET:
+			self.success_url = self.request.GET['next']
+		else:
+			self.success_url = reverse('core:remote_list')
+
+		return super(IndexView, self).form_valid(form)
 
 class InvitationAcceptView(SupremoteLoginRequiredMixin, generic.TemplateView):
 	template_name = "core/invitation_confirm.html"
@@ -135,6 +190,97 @@ class ResendInvitationView(SupremoteLoginRequiredMixin, generic.RedirectView):
 			'remote_id': self.invitation.remote.pk,
 			'remote_key': self.invitation.remote.key,
 		})
+
+
+class RemoteTriggerActionView(AuthorizedRemoteLoginRequiredMixin, generic.detail.DetailView):
+	model = remotes.Remote
+	pk_url_kwarg = 'remote_id'
+	context_object_name = 'remote'
+
+	def post(self, request, *args, **kwargs):
+		# Receive action by name
+		prefix = 'remote-action-'
+		action_id = request.POST['action_id']
+		action_id = action_id[len(prefix):]
+		remote = self.get_object()
+
+		if remote.trigger_action(action_id, request.user.email):
+			messages.success(request, "The action has been performed.")
+		else:
+			messages.error(request, "It is too soon to perform the action!")
+
+		return redirect(reverse('core:remote_detail', kwargs=kwargs))
+
+
+class RemoteFieldItem(object):
+	item_type = 'form'
+	field = None
+	key = None
+
+	def __init__(self, item_type='form', field=None, key=None):
+		self.item_type = item_type
+		self.field = field
+		self.key = key
+
+
+class RemoteDetailView(AuthorizedRemoteLoginRequiredMixin, generic.detail.DetailView):
+	template_name = "core/remote_view.html"
+
+	model = remotes.Remote
+	pk_url_kwarg = 'remote_id'
+	context_object_name = 'remote'
+
+
+
+	def post(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		self.get_context_data(object=self.object)
+
+		remote_cache = self.object.get_values()
+
+		if all([form.is_valid() for form in self.remote_field_forms]):
+			for form in self.remote_field_forms:
+				key = form.prefix
+				value = form.cleaned_data['value']
+				remote_cache[key] = value
+			self.object.save_values(remote_cache)
+			self.object.update_endpoint(request.user.email)
+			return redirect(reverse('core:remote_detail', kwargs=kwargs))
+		else:
+			messages.error(request, 'There was a problem with some of the data you provided. Double-check it and submit again.')
+			return super(RemoteDetailView, self).get(request, *args, **kwargs)
+
+
+	def get_context_data(self, **kwargs):
+		context = super(RemoteDetailView, self).get_context_data(**kwargs)
+
+		remote_cache = self.object.get_values()
+
+		ordered_conf = json.loads(self.object.configuration, object_pairs_hook=collections.OrderedDict)
+
+		self.remote_field_keys = [s for s in ordered_conf['fields'].keys() if ordered_conf['fields'][s]['type'] != 'action']
+
+		remote_fields = []
+		remote_field_forms = []
+
+		for key, field in ordered_conf['fields'].iteritems():
+			if field['type'] == 'action':
+				field_type = 'action'
+				field_form = field
+			else:
+				field_type = 'form'
+				field_form = util.RemoteFieldFactory.create(key, field, self.request.POST or None, remote_cache)
+				remote_field_forms.append(field_form)
+
+			item = RemoteFieldItem(field=field_form, item_type=field_type, key=key)
+			remote_fields.append(item)
+			
+
+		self.remote_field_forms = remote_field_forms
+		context['remote_fields'] = remote_fields
+
+
+		return context
 
 class ManageUsersRemoteView(SupremoteLoginRequiredMixin, generic.detail.SingleObjectMixin, generic.FormView):
 
@@ -221,6 +367,7 @@ class EditRemoteView(SupremoteLoginRequiredMixin, generic.UpdateView):
 			pk=remote_id,
 			key=remote_key
 		)
+
 
 	def form_valid(self, form):
 		messages.success(self.request, "Remote edited successfuly.")

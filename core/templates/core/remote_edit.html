@@ -1,65 +1,27 @@
-{% extends "core/base.html" %}
+{% extends "core/remote_page.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
 
-{% block extra_js %}
-	
-	<script src="{% static "js/ace/ace.js" %}"></script>
+{% block header %}
+	{{ remote }}
+{% endblock header %}
 
-	<script>
-		$(document).ready(function() {
-
-			 $('#editor').html($('.remote-configuration').val());
-
-			var editor = ace.edit("editor");
-			editor.setTheme("ace/theme/xcode");
-			editor.getSession().setMode("ace/mode/json");
-
-			$('#editor').insertAfter('.remote-configuration');
-			$('.remote-configuration').css("display", "none");
-
-		});
-
-		$('#configuration-submit').click(function() {
-
-			var value = ace.edit("editor").getValue();
-			$('.remote-configuration').html(value);
-			$('#remote-configuration-form').submit();
-
-		});
-
-	</script>
-{% endblock extra_js %}
-
-{% block extra_css %}
-	
-	<style>
-		.remote-configuration {
-			font-family: Courier;
-		}
-
-		#editor {
-    		/** Setting height is also important, otherwise editor wont showup**/
-    		height: 450px;
-		}
-
-	</style>
-
-{% endblock extra_css %}
-
-{% block content %}
-	<div class="container">
-		<div class="row">
-			<div class="col-sm-12">
-			<h1>Edit Remote - {{ remote }}</h1>
-				<form action="" method="POST" id="remote-configuration-form">
-					{% csrf_token %}
-					{% bootstrap_form form %}
-					<div id="editor"></div>
-					
-				</form>
-				<button class="btn btn-primary btn-block" id="configuration-submit">Edit</button>
-			</div>
+{% block inner_content %}
+	<form action="" method="POST" id="remote-configuration-form">
+		{% csrf_token %}
+		{% bootstrap_form_errors form %}
+		{% bootstrap_field form.name %}
+		{% bootstrap_field form.endpoint %}
+		<div class="form-group">
+			<label class="control-label" for="id_secret">
+			Secret</label>
+			<input class="form-control" id="id_secret" title="Your remote&#39;s API Secret. Click to reveal it." type="password" value="{{ remote.secret }}" />
+			<span class="help-block">Your remote's <a href="#">API Secret.</a> Click to reveal it.
+			</span>
 		</div>
-	</div>
-{% endblock content %}
+		{% bootstrap_field form.configuration %}
+		<div id="editor"></div>
+		
+	</form>
+<button class="btn btn-primary btn-block" id="configuration-submit">Edit</button>
+{% endblock inner_content %}

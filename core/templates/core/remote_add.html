@@ -1,16 +1,15 @@
-{% extends "core/base.html" %}
+{% extends "core/remote_page.html" %}
 {% load bootstrap3 %}
-{% block content %}
-	<div class="container">
-		<div class="row">
-			<div class="col-sm-12">
-			<h1>Create a Remote</h1>
-				<form action="" method="POST">
-					{% csrf_token %}
-					{% bootstrap_form form %}
-					<button class="btn btn-primary btn-block" type="submit">Create</button>
-				</form>
-			</div>
-		</div>
-	</div>
-{% endblock content %}
+
+{% block header %}
+	Create a Remote
+{% endblock header %}
+
+{% block inner_content %}
+	<form action="" method="POST" id="remote-configuration-form">
+		{% csrf_token %}
+		{% bootstrap_form form %}
+		<div id="editor"></div>
+		<button class="btn btn-primary btn-block" type="submit" id="configuration-submit">Create</button>
+	</form>	
+{% endblock inner_content %}

@@ -1,0 +1,56 @@
+{% extends "core/titled_page.html" %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+
+{% block extra_js %}
+	
+	<script src="{% static "js/ace/ace.js" %}"></script>
+
+	<script>
+		$(document).ready(function() {
+
+			 $('#editor').html($('.remote-configuration').val());
+
+			var editor = ace.edit("editor");
+			editor.setTheme("ace/theme/xcode");
+			editor.getSession().setMode("ace/mode/json");
+
+			$('#editor').insertAfter('.remote-configuration');
+			$('.remote-configuration').css("display", "none");
+
+		});
+
+		$('#configuration-submit').click(function() {
+
+			var value = ace.edit("editor").getValue();
+			$('.remote-configuration').html(value);
+			$('#remote-configuration-form').submit();
+
+		});
+
+		$('#id_secret').click(function() {
+
+			$(this).attr('type', 'text');
+
+		});
+
+	</script>
+{% endblock extra_js %}
+
+
+{% block extra_css %}
+	
+	<style>
+		.remote-configuration {
+			font-family: Courier;
+		}
+
+		#editor {
+    		/** Setting height is also important, otherwise editor wont showup**/
+    		height: 450px;
+		}
+
+	</style>
+
+{% endblock extra_css %}
