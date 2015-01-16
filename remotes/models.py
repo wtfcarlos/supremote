@@ -17,8 +17,6 @@ from django.utils import timezone
 from jsonschema import Draft4Validator
 from encrypted_fields import EncryptedCharField
 
-from users import models as users
-
 def path_to_schema():
 	module_dir = os.path.dirname(__file__)
 	file_path = os.path.join(module_dir, "schema.json")
@@ -35,15 +33,14 @@ def get_headers(signature):
 		'X-Supremote-Signature': signature
 	}
 
-
 class Remote(TimeStampedModel):
 	name = models.CharField(max_length=100)
 	key = models.SlugField(max_length=120)
-	developer = models.ForeignKey(users.User, related_name="developer")
+	developer = models.ForeignKey('users.User', related_name="developer")
 	endpoint = models.URLField(null=True, blank=True)
 	configuration = models.TextField()
 	secret = EncryptedCharField(max_length=36)
-	users = models.ManyToManyField(users.User)
+	users = models.ManyToManyField('users.User')
 
 	def save(self, *args, **kwargs):
 		if not self.pk:
@@ -76,7 +73,7 @@ class Remote(TimeStampedModel):
 					# If they don't, just add the value if the key was not populated.
 					cached_value = values.get(key, default_value)
 					values[key] = cached_value
-					
+
 		self.save_values(values)
 		self.save_types(types)
 
@@ -119,7 +116,7 @@ class Remote(TimeStampedModel):
 				created__gt = throttle_threshold,
 				status_code = 200,
 			).count()
-
+			
 			if throttle_entry_count == 0:
 				# Action must be triggered.
 				request_body = {
@@ -150,7 +147,7 @@ class Remote(TimeStampedModel):
 				# Action is throttled and must not be carried on.
 				return False
 		else:
-			return False
+			raise KeyError("%s is not an action defined by this remote." % action_name)
 
 	def get_configuration(self):
 		return json.loads(self.configuration)
@@ -179,10 +176,6 @@ class Remote(TimeStampedModel):
 		# Saves the default value for this key if the key does not have an associated value.
 		values = self.get_values()
 		default_value = field["default"]
-		print self.get_cache_key()
-		print values
-		print key
-		print default_value
 		cached_value = values.get(key, default_value)
 		values[key] = cached_value
 		self.save_values(values)

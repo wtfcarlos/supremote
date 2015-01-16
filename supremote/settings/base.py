@@ -114,7 +114,22 @@ INSTALLED_APPS = (
     'users',
     'invitations',
     'bootstrap3',
+    'api',
+    'rest_framework',
+    'rest_framework.authtoken',
 )
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
 
 EMAIL_SUBJECT_PREFIX = '[supremote] '
 
@@ -190,3 +205,5 @@ LOGGING = {
         },
     }
 }
+
+

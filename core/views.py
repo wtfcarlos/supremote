@@ -15,6 +15,8 @@ from django.http import HttpResponseForbidden, HttpResponse
 from django.utils import timezone
 from braces.views import LoginRequiredMixin, UserPassesTestMixin
 
+from rest_framework.authtoken.models import Token
+
 import json
 import collections
 import datetime
@@ -99,6 +101,9 @@ class SignupView(RedirectIfLoggedInViewMixin, generic.FormView):
 			user = form.save()
 			user = authenticate(username=user.username, password=signup_password)
 			app_user = users.User(auth_user=user)
+
+			Token(user=user).save()
+
 			app_user.save()
 
 			login(self.request, user)
@@ -204,10 +209,13 @@ class RemoteTriggerActionView(AuthorizedRemoteLoginRequiredMixin, generic.detail
 		action_id = action_id[len(prefix):]
 		remote = self.get_object()
 
-		if remote.trigger_action(action_id, request.user.email):
-			messages.success(request, "The action has been performed.")
-		else:
-			messages.error(request, "It is too soon to perform the action!")
+		try:
+			if remote.trigger_action(action_id, request.user.email):
+				messages.success(request, "The action has been performed.")
+			else:
+				messages.error(request, "It is too soon to perform the action!")
+		except KeyError as e:
+			messages.error(request, e.message)
 
 		return redirect(reverse('core:remote_detail', kwargs=kwargs))
 
@@ -255,6 +263,8 @@ class RemoteDetailView(AuthorizedRemoteLoginRequiredMixin, generic.detail.Detail
 		context = super(RemoteDetailView, self).get_context_data(**kwargs)
 
 		remote_cache = self.object.get_values()
+
+		print remote_cache
 
 		ordered_conf = json.loads(self.object.configuration, object_pairs_hook=collections.OrderedDict)
 
