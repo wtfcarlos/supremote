@@ -38,13 +38,13 @@ class RemoteDetailSerializer(serializers.ModelSerializer):
 	def to_representation(self, obj):
 		remote_repr = super(RemoteDetailSerializer, self).to_representation(obj)
 
-		remote_repr['configuration'] = json.loads(
+		ordered_configuration = json.loads(
 			remote_repr['configuration'],
 			object_pairs_hook=OrderedDict
 		)
 
-		print obj.get_values()
-
+		remote_repr['configuration'] = ordered_configuration
+		remote_repr['ordered_keys'] = ordered_configuration['fields'].keys()
 		remote_repr['current_values'] = obj.get_values()
 
 		return remote_repr
@@ -96,9 +96,9 @@ class RemoteTriggerActionView(JSONRequestBodyView):
 				if remote.trigger_action(action_id, request.user.email):
 					return Response(status=200, data={'message': 'The action has been performed.'})
 				else:
-					return Response(status=400, data={'error': 'It is too soon to perform the action!'})
+					return Response(status=200, data={'error': 'It is too soon to perform the action!'})
 			except KeyError as ex:
-				return Response(status=400, data={'error': ex.message})
+				return Response(status=200, data={'error': ex.message})
 		else:
 			return Response(status=403)
 
@@ -113,13 +113,17 @@ class RemoteValuesChangeView(JSONRequestBodyView):
 
 		if remote in app_user.relevant_remotes():
 			old_values = remote.get_values()
+			types = remote.get_types()
 			new_values = self.request_json['values']
 			for key, value in new_values.iteritems():
 				if key in old_values:
 					# TODO: Enforce types
-					old_values[key] = value
+					if types[key] == 'boolean':
+						old_values[key] = bool(value)
+					else:
+						old_values[key] = value
 				else:
-					return Response(status=400, data={'error': 'Key {} is not expected by Remote.'.format(key)})
+					return Response(status=200, data={'error': 'Key {} is not expected by Remote.'.format(key)})
 			remote.save_values(old_values)
 			remote.update_endpoint(request.user.email)
 			return Response(status=200, data={'response': 'OK'})
