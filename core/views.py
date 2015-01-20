@@ -32,7 +32,7 @@ from . import util
 @csrf_exempt
 def TestActionReceiveView(request):
 	import hmac
-	remote_secret = '930ac87c-d163-4565-9a7d-f450b5fb1896'
+	remote_secret = '32365bf6-b25d-4be1-968b-d51c23a4a02f'
 
 	print 'REQUEST SIGNATURE: {}'.format(request.META['HTTP_X_SUPREMOTE_SIGNATURE'])
 	
@@ -45,7 +45,7 @@ def TestActionReceiveView(request):
 @csrf_exempt
 def TestEndpointProcessView(request):
 	import hmac
-	remote_secret = '930ac87c-d163-4565-9a7d-f450b5fb1896'
+	remote_secret = '32365bf6-b25d-4be1-968b-d51c23a4a02f'
 
 	print 'REQUEST SIGNATURE: {}'.format(request.META['HTTP_X_SUPREMOTE_SIGNATURE'])
 	
