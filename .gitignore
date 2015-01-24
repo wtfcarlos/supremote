@@ -3,3 +3,4 @@
 /static
 *.pyc
 /sockets/node_modules
+/node_modules
