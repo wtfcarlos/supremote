@@ -115,23 +115,22 @@ class Remote(TimeStampedModel):
 		
 
 	def update_endpoint(self, user_email):
-		values = self.get_values()
-		
-		request_body = {
-			'user': user_email,
-			'remote_key': self.key,
-			'data': values
-		}
+		if self.endpoint:
+			values = self.get_values()
+			
+			request_body = {
+				'user': user_email,
+				'remote_key': self.key,
+				'data': values
+			}
 
-		signature = get_body_signature(request_body, self.secret)
+			signature = get_body_signature(request_body, self.secret)
 
-		response = requests.post(
-			self.endpoint,
-			data=json.dumps(request_body),
-			headers=get_headers(signature)
-		)
-
-		print response
+			response = requests.post(
+				self.endpoint,
+				data=json.dumps(request_body),
+				headers=get_headers(signature)
+			)
 
 	def trigger_action(self, action_name, user_email):
 		configuration = self.get_configuration()
