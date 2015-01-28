@@ -73,6 +73,8 @@ class Remote(TimeStampedModel):
 	secret = EncryptedCharField(max_length=36)
 	users = models.ManyToManyField('users.User')
 
+	allow_all_origins = models.BooleanField(default=False)
+
 	def save(self, *args, **kwargs):
 		if not self.pk:
 			self.secret = uuid.uuid4()
