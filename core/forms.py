@@ -104,6 +104,14 @@ class RemoteCreateForm(forms.ModelForm):
 			'configuration': _('Please refer to the <a href="#">API documentation</a> for details.')
 		}
 
+class AllowedOriginCreateForm(forms.ModelForm):
+	class Meta:
+		model = remotes.SocketOrigin
+		fields = ['remote', 'domain']
+
+		widgets = {
+			'remote': forms.HiddenInput()
+		}
 
 class RemoteEditForm(forms.ModelForm):
 	class Meta:
