@@ -10,6 +10,7 @@ urlpatterns = patterns('',
 
   url(r'^signup/$', views.SignupView.as_view(), name="signup"),
   url(r'^remotes/$', views.RemoteListView.as_view(), name="remote_list"),
+  url(r'^account/$', views.AccountSettingsView.as_view(), name="account_settings"),
   url(r'^remote/create/$', views.CreateRemoteView.as_view(), name="remote_create"),
   url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/edit/$', views.EditRemoteView.as_view(), name="remote_edit"),
 

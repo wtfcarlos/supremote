@@ -1,0 +1,19 @@
+{% extends "core/titled_page.html" %}
+{% load bootstrap3 %}
+
+{% block header %}
+	Account Settings
+{% endblock header %}
+
+{% block inner_content %}
+	<div class="row">
+		<div class="col-sm-12">
+			<form action="" method="POST">
+				{% csrf_token %}
+				{% bootstrap_form form %}
+				<button class="btn btn-block btn-primary">Change Password</button>
+			</form>
+			
+		</div>
+	</div>
+{% endblock inner_content %}

@@ -172,6 +172,31 @@ class InvitationAcceptView(SupremoteLoginRequiredMixin, generic.TemplateView):
 
 		return context
 
+
+class AccountSettingsView(SupremoteLoginRequiredMixin, generic.FormView):
+	template_name = 'core/account_settings.html'
+	success_url = reverse_lazy('core:account_settings')
+
+	def get_form(self, form_class):
+		return PasswordChangeForm(self.request.user, self.request.POST or None)
+
+	def form_valid(self, form):
+
+		form.save()
+
+		try:
+			auth_token = Token.objects.get(user=self.request.user)
+			auth_token.delete()
+		except Token.DoesNotExist:
+			pass
+		
+		Token.objects.create(user=self.request.user)
+
+
+		messages.success(self.request, "Your password was changed successfuly.")
+
+		return super(AccountSettingsView, self).form_valid(form)
+
 class ResendInvitationView(SupremoteLoginRequiredMixin, generic.RedirectView):
 
 	permanent = False
