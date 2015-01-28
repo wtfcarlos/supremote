@@ -79,6 +79,9 @@ class Remote(TimeStampedModel):
 		if not self.pk:
 			self.secret = uuid.uuid4()
 
+		conn = get_redis_connection('default')
+		conn.set(self.get_allow_all_key(), int(self.allow_all_origins))
+
 		ret = super(Remote, self).save(*args, **kwargs)
 
 		# Save default values
