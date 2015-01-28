@@ -202,6 +202,7 @@ class Remote(TimeStampedModel):
 	def save_values(self, values):
 		cache = get_cache('default')
 		key = self.get_cache_key()
+		print key
 		cache.set(key, values, None)
 
 	def save_default(self, key, field):
@@ -213,10 +214,16 @@ class Remote(TimeStampedModel):
 		self.save_values(values)
 
 	def get_cache_key(self):
-		return 'remote-{}-{}'.format(self.pk, self.key)
+		return '{}.values'.format(self.key)
 
 	def get_type_cache_key(self):
-		return 'type-remote-{}-{}'.format(self.pk, self.key)
+		return '{}.types'.format(self.key)
+
+	def get_domains_key(self):
+		return '{}.domains'.format(self.key)
+
+	def get_allow_all_key(self):
+		return '{}.allow_all_origins'.format(self.key)
 
 	def get_absolute_url(self):
 		return reverse('core:remote_detail', kwargs={
@@ -225,7 +232,6 @@ class Remote(TimeStampedModel):
 		})
 
 	def clean(self):
-
 		#Load the JSON schema
 		schema_file = open(path_to_schema())
 		schema = self.validate_schema(schema_file)
