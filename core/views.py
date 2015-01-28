@@ -101,23 +101,14 @@ class SignupView(RedirectIfLoggedInViewMixin, generic.FormView):
 			user = form.save()
 			user = authenticate(username=user.username, password=signup_password)
 			app_user = users.User(auth_user=user)
-
 			Token(user=user).save()
-
 			app_user.save()
-
 			login(self.request, user)
 		else:
 			raise ValidationError("There is already a User with the given email.")
 
 		
-		return super(SignupView, self).form_valid(form)
-
-
-
-		
-					
-					
+		return super(SignupView, self).form_valid(form)				
 
 class IndexView(RedirectIfLoggedInViewMixin, generic.FormView):
 
