@@ -3,6 +3,8 @@
 import os
 import sys
 
+SOCKET_KEY = os.environ['SUPREMOTE_SOCKET_KEY']
+
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
 
 # Modify sys.path to include the lib directory
