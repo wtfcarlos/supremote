@@ -230,6 +230,9 @@ class Remote(TimeStampedModel):
 
 
 	def validate_field(self, key, field):
+
+		acceptable_action_classes = ['danger', 'primary', 'default', 'warning', 'success', 'info']
+
 		if field["type"] == "text":
 			if field["max-length"] <= 0:
 				raise ValidationError("{}: max-length must be greater than 0.".format(key))
@@ -251,6 +254,9 @@ class Remote(TimeStampedModel):
 		elif field["type"] == "action":
 			if not field["endpoint"].startswith("http"):
 				raise ValidationError("{}: endpoint must start with http or https.".format(key))
+
+			if not field["class"] in acceptable_action_classes:
+				raise ValidationError("{}: class must be one of {}".format(key, acceptable_action_classes))
 
 
 	def __unicode__(self):
