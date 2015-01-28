@@ -99,8 +99,8 @@ class RemoteCreateForm(forms.ModelForm):
 		}
 		help_texts = {
 			'name': _('A common name for your remote.'),
-			'key': _('This key will be part of your REST API URI. <b>You will not be able to change this later.</b>'),
-			'endpoint': _('REST endpoint where supremote can POST your server'),
+			'key': _('A unique key for your remote, containing only letters, numbers, underscores or hyphens. <br /><strong>You will not be able to change it later.</strong>'),
+			'endpoint': _('REST endpoint where supremote can POST your server <i>(optional)</i>'),
 			'configuration': _('Please refer to the <a href="#">API documentation</a> for details.')
 		}
 
