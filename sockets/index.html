@@ -1,0 +1,42 @@
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  	
+  	var socket = io('http://localhost:9111');
+ 
+  	socket.emit('join', 'kokoro-chan');
+
+	socket.on('#hard-reset', function(data) {
+		console.log(data);
+	});
+
+	socket.on('update', function(data) {
+		console.log(data);
+	});
+
+	socket.on('error', function(data) {
+		console.log(data);
+	});
+
+	socket.on('unauthorized', function(data) {
+		console.log(data);
+	});
+
+	socket.on('disconnect', function(data) {
+		console.log("DISCONNECTED!");
+		console.log(data);
+	});
+
+	socket.on('not-found', function(data) {
+		console.log(data);
+	});
+
+	socket.on('info', function(data) {
+		console.log(data);
+	});
+
+	socket.on('reconnect', function(data) {
+		console.log("RECONNECTED");
+		socket.emit('join', 'kokoro-chan');
+	});
+
+</script>
