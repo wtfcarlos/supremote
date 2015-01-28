@@ -12,10 +12,13 @@ from django.core.cache import get_cache
 from django_extensions.db.models import TimeStampedModel
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.core.validators import RegexValidator
 from django.utils import timezone
 
 from jsonschema import Draft4Validator
 from encrypted_fields import EncryptedCharField
+
+from django_redis import get_redis_connection
 
 def path_to_schema():
 	module_dir = os.path.dirname(__file__)
@@ -32,6 +35,34 @@ def get_headers(signature):
 		'Content-Type': 'application/json',
 		'X-Supremote-Signature': signature
 	}
+
+
+class SocketOrigin(TimeStampedModel):
+	remote = models.ForeignKey('Remote')
+	domain = models.CharField(
+		max_length=255,
+		validators = [
+			RegexValidator(
+				r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$',
+				'Only valid domain names are allowed. No whitespace either.',
+				'This domain name looks invalid.'
+			)
+		]
+	)
+
+	def save(self, *args, **kwargs):
+		if not self.pk:
+			conn = get_redis_connection('default')
+			conn.sadd(self.remote.get_domains_key(), self.domain)
+		return super(SocketOrigin, self).save(*args, **kwargs)
+
+	def delete(self):
+		conn = get_redis_connection('default')
+		conn.srem(self.remote.get_domains_key(), self.domain)
+		super(SocketOrigin, self).delete()
+
+	class Meta:
+		unique_together = (('remote', 'domain',),)
 
 class Remote(TimeStampedModel):
 	name = models.CharField(max_length=100)
