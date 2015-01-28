@@ -7,6 +7,7 @@ from django.core.mail import send_mail, EmailMessage
 from django.core.cache import get_cache
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.forms import PasswordChangeForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.shortcuts import redirect, get_object_or_404
