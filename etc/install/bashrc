@@ -100,4 +100,5 @@ fi
 
 export WORKON_HOME=$HOME/.virtualenvs
 export PIP_DOWNLOAD_CACHE=$HOME/.pip_download_cache
+export SUPREMOTE_SOCKET_KEY="SUPREMOTEs80ry-lsro%0zf@rds5!z0aje12-xy2da-3!ijamu(sd5#2=a&"
 source /usr/local/bin/virtualenvwrapper.sh
