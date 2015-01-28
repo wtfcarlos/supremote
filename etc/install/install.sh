@@ -56,26 +56,13 @@ fi
 cp -p $PROJECT_DIR/etc/install/bashrc /home/vagrant/.bashrc
 su - vagrant -c "mkdir -p /home/vagrant/.pip_download_cache"
 
-# # Node.js and CoffeeScript
-# if ! command -v npm; then
-#     wget http://nodejs.org/dist/v0.10.0/node-v0.10.0.tar.gz
-#     tar xzf node-v0.10.0.tar.gz
-#     cd node-v0.10.0/
-#     ./configure && make && make install
-#     cd ..
-#     rm -rf node-v0.10.0/ node-v0.10.0.tar.gz
-# fi
-# if ! command -v coffee; then
-#     npm install -g coffee-script
-# fi
-
 # Enables add-apt-repository
 apt-get install -y python-software-properties
 # Add dart PPA repo
-yes | add-apt-repository ppa:hachre/dart
+yes | apt-add-repository ppa:chris-lea/node.js
 # Install dart.
 apt-get update
-apt-get install -y dartsdk
+apt-get install -y nodejs
 
 
 # Update ruby gems system
@@ -84,7 +71,6 @@ gem update --system
 # Install sass && compass
 gem install sass
 gem install compass
-
 # ---
 
 # postgresql setup for project
