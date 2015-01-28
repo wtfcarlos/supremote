@@ -66,7 +66,7 @@ class SocketOrigin(TimeStampedModel):
 
 class Remote(TimeStampedModel):
 	name = models.CharField(max_length=100)
-	key = models.SlugField(max_length=120)
+	key = models.SlugField(max_length=120, unique=True)
 	developer = models.ForeignKey('users.User', related_name="developer")
 	endpoint = models.URLField(null=True, blank=True)
 	configuration = models.TextField()
