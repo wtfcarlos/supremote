@@ -3,4 +3,5 @@
 /static
 *.pyc
 /sockets/node_modules
+/sockets/*.log
 /node_modules
