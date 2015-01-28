@@ -115,15 +115,20 @@ class RemoteValuesChangeView(JSONRequestBodyView):
 			old_values = remote.get_values()
 			types = remote.get_types()
 			new_values = self.request_json['values']
-			for key, value in new_values.iteritems():
-				if key in old_values:
+			print new_values.keys()
+			print old_values
+			if all([k in old_values for k in new_values.keys()]):
+				for key, value in new_values.iteritems():
 					# TODO: Enforce types
 					if types[key] == 'boolean':
 						old_values[key] = bool(value)
+					elif types[key] == 'number':
+						old_values[key] = int(value)
 					else:
 						old_values[key] = value
-				else:
-					return Response(status=200, data={'error': 'Key {} is not expected by Remote.'.format(key)})
+			else:
+				return Response(status=200, data={'error': 'Key {} is not expected by Remote.'.format(key)})
+
 			remote.save_values(old_values)
 			remote.update_endpoint(request.user.email)
 			return Response(status=200, data={'response': 'OK'})
