@@ -1,0 +1,96 @@
+{% extends "core/remote_page.html" %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+
+{% block extra_js %}
+	<script>
+
+		function deleteOrigin(originId) {
+			var deletionForm = $('#origin-delete-form');
+			var originIdInput = $('#origin-id-input');
+			originIdInput.val(originId);
+			deletionForm.submit();
+		}
+
+			$(document).ready(function() {
+				$('[data-toggle="tooltip"]').tooltip();
+
+				$('.origin-delete-btn').click(function() {
+					var clickedOriginId = $(this).attr('id');
+
+					swal({
+						title: "Are you sure?",
+						text: "This origin will be deleted.",
+						type: "warning",
+						showCancelButton: true,
+						confirmButtonColor: "#DD6B55",
+						confirmButtonText: "Yes, delete it!",
+						closeOnConfirm: false
+					}, function() {
+						deleteOrigin(clickedOriginId);
+					});
+
+				});
+			});
+
+	</script>
+{% endblock extra_js %}
+
+{% block header %}
+	Manage Origins - {{ remote }}
+{% endblock header %}
+
+{% block inner_content %}
+	<p>
+		<span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo itaque veniam nisi quae, dolor pariatur expedita qui, nobis, excepturi iure minus. Aliquid repellat quaerat, deleniti et alias delectus obcaecati veritatis!</span>
+	</p>
+
+
+	<div class="row">
+		<div class="col-sm-12">
+			<h3>Allowed Origins</h3>
+	
+			<table class="table table-striped table-responsive">
+				<tr>
+					<th>Domain</th>
+					<th>Added</th>
+					<th>Actions</th>
+				</tr>
+
+				{% for origin in remote.socketorigin_set.all %}
+					<tr>
+						<td>{{ origin.domain }}</td>
+						<td>{{ origin.created }}</td>
+						<td>
+							<button id="{{ origin.pk }}" data-toggle="tooltip" data-placement="top" title="Delete" href="" class="btn btn-sm btn-danger origin-delete-btn">
+								<span class="glyphicon glyphicon-remove"></span>
+							</button>
+						</td>
+					</tr>
+				{% endfor %}
+
+			</table>
+			
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="col-sm-12">
+		<h3>Add Origin</h3>
+			<form action="" method="POST">
+				{% csrf_token %}
+				{% bootstrap_form form %}
+				<button class="btn btn-primary btn-block">
+					Add
+				</button>
+			</form>
+		</div>
+	</div>
+	
+	<form action="{% url 'core:remote_delete_origin' remote_id=remote.pk remote_key=remote.key %}" method="POST" id="origin-delete-form">
+		{% csrf_token %}
+		<input name="origin_id" type="hidden" id="origin-id-input" value="" />
+	</form>
+
+{% endblock inner_content %}

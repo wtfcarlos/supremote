@@ -3,7 +3,7 @@
 {% load staticfiles %}
 
 {% block header %}
-	{{ remote }}
+	Edit {{ remote }}
 {% endblock header %}
 
 {% block inner_content %}
@@ -19,6 +19,7 @@
 			<span class="help-block">Your remote's <a href="#">API Secret.</a> Click to reveal it.
 			</span>
 		</div>
+		<a href="{% url 'core:remote_manage_origins' remote_id=remote.pk remote_key=remote.key %}" class="btn btn-info btn-block">Manage Allowed Origins</a>
 		{% bootstrap_field form.configuration %}
 		<div id="editor"></div>
 		

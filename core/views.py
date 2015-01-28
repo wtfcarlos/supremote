@@ -256,6 +256,40 @@ class RemoteFieldItem(object):
 		self.key = key
 
 
+class ManageRemoteOriginsView(AuthorizedRemoteLoginRequiredMixin, generic.detail.SingleObjectMixin, generic.FormView):
+	
+	template_name = "core/remote_manage_origins.html"
+	model = remotes.Remote
+	pk_url_kwarg = 'remote_id'
+	context_object_name = 'remote'
+	form_class = forms.AllowedOriginCreateForm
+
+	success_url = reverse_lazy('core:remote_manage_origins')
+
+	def get_initial(self):
+		return {
+			'remote': self.object
+		}
+
+	def form_valid(self, form):
+
+		if self.object == form.cleaned_data['remote']:
+			form.save()
+			messages.success(self.request, "The domain has been added.")
+		else:
+			return HttpResponse(status=401)
+		return super(ManageRemoteOriginsView, self).form_valid(form)
+
+	def dispatch(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		return super(ManageRemoteOriginsView, self).dispatch(request, *args, **kwargs)
+
+	def get_success_url(self):
+		return reverse_lazy(
+			'core:remote_manage_origins',
+			kwargs=self.kwargs
+		)
+
 class RemoteDetailView(AuthorizedRemoteLoginRequiredMixin, generic.detail.DetailView):
 	template_name = "core/remote_view.html"
 
@@ -435,6 +469,27 @@ class DeleteUserRemoteView(SupremoteLoginRequiredMixin, generic.RedirectView):
 			'remote_id': self.remote.pk,
 			'remote_key': self.remote.key,
 		})
+
+
+class DeleteOriginView(SupremoteLoginRequiredMixin, generic.DeleteView):
+	success_url = reverse_lazy('core:remote_manage_origins')
+
+	def get_success_url(self):
+		return reverse('core:remote_manage_origins', kwargs=self.kwargs)
+
+	def post(self, request, *args, **kwargs):
+		self.socket_origin = request.POST['origin_id']
+		return super(DeleteOriginView, self).post(request, *args, **kwargs)
+
+	def get_object(self, queryset=None):
+		return remotes.SocketOrigin.objects.get(
+			pk=self.socket_origin,
+			remote__developer__auth_user=self.request.user,
+		)
+
+	def delete(self, request, *args, **kwargs):
+		messages.success(request, "The origin has been deleted.")
+		return super(DeleteOriginView, self).delete(request, *args, **kwargs)
 
 class DeleteRemoteView(SupremoteLoginRequiredMixin, generic.DeleteView):
 	success_url = reverse_lazy('core:remote_list')

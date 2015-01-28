@@ -16,11 +16,14 @@ urlpatterns = patterns('',
 
   url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/users/$', views.ManageUsersRemoteView.as_view(), name="remote_manage_users"),
 
+  url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/origins/manage/$', views.ManageRemoteOriginsView.as_view(), name="remote_manage_origins"),
+
+  url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/origins/delete/$', views.DeleteOriginView.as_view(), name="remote_delete_origin"),
+
   url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/$', views.RemoteDetailView.as_view(), name="remote_detail"),
 
   url(r'^remote/(?P<remote_id>\d+)/(?P<remote_key>[\w_-]+)/trigger_action/$', views.RemoteTriggerActionView.as_view(), name="remote_trigger_action"),
-
-
+  
   url(r'^remote/delete/$', views.DeleteRemoteView.as_view(), name="remote_delete"),
 
   url(r'^invitation/(?P<nonce>[\w-]+)/$', views.InvitationAcceptView.as_view(), name="invitation_link"),
