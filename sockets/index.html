@@ -6,10 +6,17 @@
   	socket.emit('join', 'kokoro-chan');
 
 	socket.on('#hard-reset', function(data) {
+		console.log("HARD RESET RECV");
+		console.log(data);
+	});
+
+	socket.on('#send-email', function(data) {
+		console.log("SEND EMAIL RECV");
 		console.log(data);
 	});
 
 	socket.on('update', function(data) {
+		console.log("UPDATE RECVD");
 		console.log(data);
 	});
 
