@@ -121,9 +121,29 @@ class Remote(TimeStampedModel):
 
 		return ret
 
-		
+	def emit_socket_event(self, event_type, action_name=None):
+		socket_emit_url = 'http://localhost:9000/emit/'
+		emit_password = os.environ['SUPREMOTE_SOCKET_KEY']
+
+		request_body = {
+			'event_type': event_type,
+			'room': self.key,
+			'message': self.get_values(),
+			'password': emit_password
+		}
+
+		if action_name:
+			request_body.update({'action_name': action_name})
+
+		grequests.post(
+			socket_emit_url,
+			data=json.dumps(request_body),
+			headers={'Content-Type': 'application/json'}
+		).send()
 
 	def update_endpoint(self, user_email):
+		self.emit_socket_event('update')
+
 		if self.endpoint:
 			values = self.get_values()
 			
@@ -173,6 +193,8 @@ class Remote(TimeStampedModel):
 				transaction_id = uuid.uuid4()
 				signature = get_body_signature(request_body, self.secret, transaction_id)
 				headers = get_headers(signature, transaction_id)
+
+				self.emit_socket_event('action', action_name=action_name)
 
 				grequests.post(
 					endpoint,
