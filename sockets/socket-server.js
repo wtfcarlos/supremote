@@ -25,10 +25,37 @@ redisClient.select(1, function() {
 
 	// Endpoint for emitting from the django server.
 	app.post('/emit', function(req, res) {
-	    // TODO - Check for system variable key.
-	    io.sockets.in(req.body.room).emit('#hard-reset', { "message": req.body.message });
+	    // Get emission password from system variable
+	    var emission_key = process.env.SUPREMOTE_SOCKET_KEY
+	    var received_key = req.body.password;
+
 	    res.setHeader('Content-Type', 'application/json');
-	    res.end(JSON.stringify({ "result": "ok" }));
+
+	    if (received_key == emission_key) {
+
+	    	var message = req.body.message;
+	    	var event_type = req.body.event_type;
+	    	var room = req.body.room;
+
+	    	if (event_type == "update") {
+	    		io.sockets.in(room)
+	    		.emit('update', message);
+	    	} else if (event_type == "action") {
+	    		var action_name = req.body.action_name;
+	    		io.sockets.in(room)
+	    		.emit('#' + action_name, message);
+	    	} else {
+	    		res.end(
+	    			JSON.stringify(
+	    				{ "result": "error", "description": "Event type not supported." }
+	    				)
+	    			);
+	    	}
+	    	res.end(JSON.stringify({ "result": "ok", "socket_key": emission_key }));
+	    } else {
+			res.end(JSON.stringify({ "result": "error", "description": "Emission password not provided." }));
+	    }
+	    
 	});
 
 
