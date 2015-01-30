@@ -36,9 +36,16 @@ def TestActionReceiveView(request):
 	remote_secret = '32365bf6-b25d-4be1-968b-d51c23a4a02f'
 
 	print 'REQUEST SIGNATURE: {}'.format(request.META['HTTP_X_SUPREMOTE_SIGNATURE'])
+	print 'TRANSACTION ID: {}'.format(request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID'])
 	
+	transaction_id = request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID']
+
+	signature_maker = hmac.new(str(remote_secret))
+	signature_maker.update(request.body)
+	signature_maker.update(transaction_id)
+
 	print 'CALCULATED SIGNATURE: {}'.format(
-		hmac.new(request.body, remote_secret).hexdigest()
+		signature_maker.hexdigest()
 	)
 
 	return HttpResponse()
@@ -49,12 +56,20 @@ def TestEndpointProcessView(request):
 	remote_secret = '32365bf6-b25d-4be1-968b-d51c23a4a02f'
 
 	print 'REQUEST SIGNATURE: {}'.format(request.META['HTTP_X_SUPREMOTE_SIGNATURE'])
+	print 'TRANSACTION ID: {}'.format(request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID'])
 	
+	transaction_id = request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID']
+
+	signature_maker = hmac.new(str(remote_secret))
+	signature_maker.update(request.body)
+	signature_maker.update(transaction_id)
+
 	print 'CALCULATED SIGNATURE: {}'.format(
-		hmac.new(request.body, remote_secret).hexdigest()
+		signature_maker.hexdigest()
 	)
 
 	return HttpResponse()
+
 
 class SupremoteLoginRequiredMixin(LoginRequiredMixin):
 	login_url = reverse_lazy("core:index")
@@ -314,9 +329,6 @@ class RemoteDetailView(AuthorizedRemoteLoginRequiredMixin, generic.detail.Detail
 		context = super(RemoteDetailView, self).get_context_data(**kwargs)
 
 		remote_cache = self.object.get_values()
-
-		print remote_cache
-
 		ordered_conf = json.loads(self.object.configuration, object_pairs_hook=collections.OrderedDict)
 
 		self.remote_field_keys = [s for s in ordered_conf['fields'].keys() if ordered_conf['fields'][s]['type'] != 'action']
