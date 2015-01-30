@@ -60,7 +60,6 @@
          "additionalProperties":false,
          "required":[
             "type",
-            "description",
             "title",
             "maxLength",
             "default"
@@ -95,7 +94,6 @@
          "additionalProperties":false,
          "required":[
             "type",
-            "description",
             "title",
             "range",
             "default"
@@ -121,7 +119,6 @@
          "additionalProperties":false,
          "required":[
             "type",
-            "description",
             "title",
             "default"
          ]
@@ -154,7 +151,6 @@
          "additionalProperties":false,
          "required":[
             "type",
-            "description",
             "title",
             "choices",
             "default"
@@ -193,7 +189,6 @@
          "additionalProperties":false,
          "required":[
             "type",
-            "description",
             "title",
             "throttle",
             "class",
