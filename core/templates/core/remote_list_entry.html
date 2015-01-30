@@ -6,16 +6,16 @@
 	<div class="col-sm-4 col-xs-6">
 		<div class="pull-right">
 			<a href="{% url "core:remote_edit" remote_key=remote.key remote_id=remote.pk %}">
-				<button class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Edit Configuration">
+				<button class="btn btn-xs btn-warning" data-toggle="tooltip" data-placement="top" title="Edit Configuration">
 				<span class="pull-right glyphicon glyphicon-cog" aria-hidden="true"></span>
 				</button>
 			</a>
 			<a href="{% url "core:remote_manage_users" remote_key=remote.key remote_id=remote.pk %}">
-				<button class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Manage Users">
+				<button class="btn btn-xs btn-info" data-toggle="tooltip" data-placement="top" title="Manage Users">
 				<span class="pull-right glyphicon glyphicon-user" aria-hidden="true"></span>
 				</button>
 			</a>
-			<button id="{{ remote.pk }}" class="remote-delete-button btn btn-danger" data-toggle="tooltip" data-placement="top" title="Delete">
+			<button id="{{ remote.pk }}" class="remote-delete-button btn btn-xs btn-danger" data-toggle="tooltip" data-placement="top" title="Delete">
 			<span class="pull-right glyphicon glyphicon-remove" aria-hidden="true"></span>
 			</button>
 		</div>
