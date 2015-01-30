@@ -291,12 +291,30 @@ class Remote(TimeStampedModel):
 		try:
 			validator.validate(configuration_json)
 		except jsonschema.exceptions.ValidationError as e:
-			full_error_path = '.'.join(list(e.absolute_path))
-			error_message = "There is a problem with the entry {}.".format(full_error_path)
-			raise ValidationError(error_message)
+			# print e
+			# full_error_path = '.'.join(list(e.absolute_path))
+			# error_message = "There is a problem with the entry {}.".format(full_error_path)
+			raise ValidationError(e)
 
 		for key, field in configuration_json["fields"].iteritems():
 			self.validate_field(key, field)
+
+		index = 0
+		fieldset_entries = []
+
+		for fieldset in configuration_json["fieldsets"]:
+			for field in fieldset["fields"]:
+				if field not in fieldset_entries:
+					fieldset_entries.append(field)
+				else:
+					raise ValidationError("Fieldset at index {} repeats field key '{}'.".format(index, field))
+
+				if field not in configuration_json["fields"]:
+					raise ValidationError("The key '{}'' is not defined as a field in fieldset at index {}".format(field, index))
+
+			index += 1
+
+
 
 		return configuration_json
 

@@ -4,9 +4,47 @@
    "properties":{
       "fields":{
          "$ref":"#/definitions/field-list"
+      },
+      "fieldsets": {
+         "$ref": "#/definitions/fieldsets"
       }
    },
    "definitions":{
+
+
+      "fieldsets": {
+         "type": "array",
+         "minItems": 1,
+         "items": {
+            "type": "object",
+            "properties": {
+               "title": {
+                  "$ref":"#/definitions/title"
+               },
+
+               "fields": {
+                  "type": "array",
+                  "items": {
+                     "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "uniqueItems": true
+               },
+
+               "helpText": {
+                  "$ref":"#/definitions/description"
+               }
+
+            },
+            "additionalProperties": false,
+            "required": [
+               "title",
+               "fields"
+            ]
+         }
+      },
+
       "field-list":{
          "patternProperties":{
             "^[\\w_-]+$":{

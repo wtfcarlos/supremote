@@ -32,29 +32,34 @@
 {% endblock extra_js %}
 
 {% block inner_content %}
-	<p>
 
-		<form action="" method="POST" novalidate>
-			{% csrf_token %}
-			{% for field_item in remote_fields %}
+	<div class="row">
+		<div class="col-sm-12">
+				<form action="" method="POST" novalidate>
+				{% csrf_token %}
+				{% for fieldset in remote_fieldset_list %}
+				<div class="panel panel-default">
+				  <div class="panel-heading"><strong>{{ fieldset.title }}</strong></div>
+				  <div class="panel-body">
+				    {% for field_item in fieldset.fields %}
+							{% if field_item.item_type == 'form' %}
+								{% bootstrap_form field_item.field %}
+							{% else %}
+								<button id="remote-action-{{ field_item.key }}" class="action-btn btn btn-{{ field_item.field.class }} btn-block">{{ field_item.field.title }}</button>
+								<span class="help-block">{{ field_item.field.description }}
+						</span>
+							{% endif %}
+						{% endfor %}
+						</div>
+					</div>
+					{% endfor %}
+					<button class="btn btn-block btn-lg btn-primary" type="submit"><span class="glyphicon glyphicon-ok"></span> Update</button>
+				</form>
+		</div>
+	</div>
 
-				{% if field_item.item_type == 'form' %}
-					{% bootstrap_form field_item.field %}
-				{% else %}
-					<button id="remote-action-{{ field_item.key }}" class="action-btn btn btn-{{ field_item.field.class }} btn-md">{{ field_item.field.title }}</button>
-					<span class="help-block">{{ field_item.field.description }}
-			</span>
-				{% endif %}
-				
-			{% endfor %}
-			<button class="btn btn-block btn-primary" type="submit">Submit</button>
-			
-		</form>
-
-		<form method="POST" id="action_form" action="{% url "core:remote_trigger_action" remote_id=remote.pk remote_key=remote.key %}">
-			{% csrf_token %}
-			<input type="hidden" name="action_id" id="action_id" value="" />
-		</form>
-
-	</p>
+	<form method="POST" id="action_form" action="{% url "core:remote_trigger_action" remote_id=remote.pk remote_key=remote.key %}">
+		{% csrf_token %}
+		<input type="hidden" name="action_id" id="action_id" value="" />
+	</form>
 {% endblock inner_content %}

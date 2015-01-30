@@ -252,15 +252,7 @@ class RemoteTriggerActionView(AuthorizedRemoteLoginRequiredMixin, generic.detail
 		return redirect(reverse('core:remote_detail', kwargs=kwargs))
 
 
-class RemoteFieldItem(object):
-	item_type = 'form'
-	field = None
-	key = None
 
-	def __init__(self, item_type='form', field=None, key=None):
-		self.item_type = item_type
-		self.field = field
-		self.key = key
 
 
 class ManageRemoteOriginsView(AuthorizedRemoteLoginRequiredMixin, generic.detail.SingleObjectMixin, generic.FormView):
@@ -296,6 +288,22 @@ class ManageRemoteOriginsView(AuthorizedRemoteLoginRequiredMixin, generic.detail
 			'core:remote_manage_origins',
 			kwargs=self.kwargs
 		)
+
+class RemoteFieldItem(object):
+	item_type = 'form'
+	field = None
+	key = None
+
+	def __init__(self, item_type='form', field=None, key=None):
+		self.item_type = item_type
+		self.field = field
+		self.key = key
+
+class RemoteFieldSetItem(object):
+	def __init__(self, title, help_text):
+		self.fields = []
+		self.title = title
+		self.help_text = help_text
 
 class RemoteDetailView(AuthorizedRemoteLoginRequiredMixin, generic.detail.DetailView):
 	template_name = "core/remote_view.html"
@@ -333,9 +341,10 @@ class RemoteDetailView(AuthorizedRemoteLoginRequiredMixin, generic.detail.Detail
 
 		self.remote_field_keys = [s for s in ordered_conf['fields'].keys() if ordered_conf['fields'][s]['type'] != 'action']
 
-		remote_fields = []
 		remote_field_forms = []
+		remote_field_dict = {}
 
+		# Process each field's configuration and create the RemoteFieldItems
 		for key, field in ordered_conf['fields'].iteritems():
 			if field['type'] == 'action':
 				field_type = 'action'
@@ -346,11 +355,22 @@ class RemoteDetailView(AuthorizedRemoteLoginRequiredMixin, generic.detail.Detail
 				remote_field_forms.append(field_form)
 
 			item = RemoteFieldItem(field=field_form, item_type=field_type, key=key)
-			remote_fields.append(item)
+			remote_field_dict.update({key: item})
 			
 
+		remote_fieldset_list = []
+		for fieldset in ordered_conf["fieldsets"]:
+			# For each fieldset, iterate over the elements and add them to a RemoteFieldSetItem
+			fieldset_item = RemoteFieldSetItem(fieldset["title"], fieldset.get("helpText"))
+			for field_name in fieldset["fields"]:
+				fieldset_item.fields.append(remote_field_dict[field_name])
+
+			remote_fieldset_list.append(fieldset_item)
+
+
 		self.remote_field_forms = remote_field_forms
-		context['remote_fields'] = remote_fields
+
+		context['remote_fieldset_list'] = remote_fieldset_list
 
 
 		return context
