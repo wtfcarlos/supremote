@@ -291,9 +291,6 @@ class Remote(TimeStampedModel):
 		try:
 			validator.validate(configuration_json)
 		except jsonschema.exceptions.ValidationError as e:
-			# print e
-			# full_error_path = '.'.join(list(e.absolute_path))
-			# error_message = "There is a problem with the entry {}.".format(full_error_path)
 			raise ValidationError(e)
 
 		for key, field in configuration_json["fields"].iteritems():
