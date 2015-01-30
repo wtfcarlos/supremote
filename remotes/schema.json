@@ -50,7 +50,7 @@
             "title":{
                "$ref":"#/definitions/title"
             },
-            "max-length":{
+            "maxLength":{
                "type":"number"
             },
             "default": {
@@ -62,7 +62,7 @@
             "type",
             "description",
             "title",
-            "max-length",
+            "maxLength",
             "default"
          ]
       },

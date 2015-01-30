@@ -284,10 +284,10 @@ class Remote(TimeStampedModel):
 		acceptable_action_classes = ['danger', 'primary', 'default', 'warning', 'success', 'info']
 
 		if field["type"] == "text":
-			if field["max-length"] <= 0:
-				raise ValidationError("{}: max-length must be greater than 0.".format(key))
-			if len(field["default"]) > field["max-length"]:
-				raise ValidationError("{}: default value is longer than max-length".format(key))
+			if field["maxLength"] <= 0:
+				raise ValidationError("{}: maxLength must be greater than 0.".format(key))
+			if len(field["default"]) > field["maxLength"]:
+				raise ValidationError("{}: default value is longer than maxLength".format(key))
 
 		elif field["type"] == "number":
 			f_range = field["range"]

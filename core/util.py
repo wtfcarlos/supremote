@@ -11,7 +11,7 @@ class RemoteFieldFactory(object):
 				prefix=key,
 				title=field['title'],
 				description=field['description'],
-				max_length=field['max-length'],
+				max_length=field['maxLength'],
 				initial=initial_value
 			)
 				
