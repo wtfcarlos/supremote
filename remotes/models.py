@@ -2,7 +2,7 @@
 import os
 import json
 import jsonschema
-import requests 
+import grequests 
 import datetime
 import hmac
 import uuid
@@ -26,14 +26,18 @@ def path_to_schema():
 	return file_path
 
 
-def get_body_signature(body, secret):
+def get_body_signature(body, secret, transaction_id):
 	body_str = json.dumps(body)
-	return hmac.new(body_str, secret).hexdigest()
+	signature_maker = hmac.new(str(secret))
+	signature_maker.update(body_str)
+	signature_maker.update(str(transaction_id))
+	return signature_maker.hexdigest()
 
-def get_headers(signature):
+def get_headers(signature, transaction_id):
 	return {
 		'Content-Type': 'application/json',
-		'X-Supremote-Signature': signature
+		'X-Supremote-Signature': signature,
+		'X-Supremote-Transaction-Id': str(transaction_id)
 	}
 
 
@@ -63,6 +67,8 @@ class SocketOrigin(TimeStampedModel):
 
 	class Meta:
 		unique_together = (('remote', 'domain',),)
+
+
 
 class Remote(TimeStampedModel):
 	name = models.CharField(max_length=100)
@@ -127,13 +133,14 @@ class Remote(TimeStampedModel):
 				'data': values
 			}
 
-			signature = get_body_signature(request_body, self.secret)
+			transaction_id = uuid.uuid4()
+			signature = get_body_signature(request_body, self.secret, transaction_id)
 
-			response = requests.post(
+			grequests.post(
 				self.endpoint,
 				data=json.dumps(request_body),
-				headers=get_headers(signature)
-			)
+				headers=get_headers(signature, transaction_id)
+			).send()
 
 	def trigger_action(self, action_name, user_email):
 		configuration = self.get_configuration()
@@ -163,20 +170,23 @@ class Remote(TimeStampedModel):
 					}
 				}
 
-				signature = get_body_signature(request_body, self.secret)
-				headers = get_headers(signature)
+				transaction_id = uuid.uuid4()
+				signature = get_body_signature(request_body, self.secret, transaction_id)
+				headers = get_headers(signature, transaction_id)
 
-				response = requests.post(
+				grequests.post(
 					endpoint,
 					data=json.dumps(request_body),
 					headers=headers
-				)
+				).send()
 
+				# FIXME: Put actual response status code.
 				ActionThrottle(
 					remote=self,
 					key = action_name,
-					status_code=response.status_code
+					status_code=200
 				).save()
+
 				return True
 			else:
 				# Action is throttled and must not be carried on.
@@ -205,7 +215,6 @@ class Remote(TimeStampedModel):
 	def save_values(self, values):
 		cache = get_cache('default')
 		key = self.get_cache_key()
-		print key
 		cache.set(key, values, None)
 
 	def save_default(self, key, field):
