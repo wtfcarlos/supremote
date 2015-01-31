@@ -31,7 +31,9 @@
 
 		$('#id_secret').click(function() {
 
+
 			$(this).attr('type', 'text');
+			$(this).attr('disabled', '');
 
 		});
 
@@ -49,6 +51,10 @@
 		#editor {
     		/** Setting height is also important, otherwise editor wont showup**/
     		height: 450px;
+		}
+
+		.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+			cursor: text;
 		}
 
 	</style>
