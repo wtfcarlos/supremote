@@ -116,7 +116,7 @@ class AllowedOriginCreateForm(forms.ModelForm):
 class RemoteEditForm(forms.ModelForm):
 	class Meta:
 		model = remotes.Remote
-		fields = ['name', 'endpoint', 'configuration']
+		fields = ['name', 'endpoint', 'allow_all_origins', 'configuration']
 
 		widgets = {
 			'configuration': forms.Textarea(attrs={'class': 'remote-configuration'}),
@@ -126,6 +126,7 @@ class RemoteEditForm(forms.ModelForm):
 			'name': _('A common name for your remote.'),
 			'endpoint': _('REST endpoint where supremote can POST your server'),
 			'configuration': _('Please refer to the <a href="#">API documentation</a> for details.'),
+			'allow_all_origins': _('Allows all origins to connect to the <a href=#>socket service</a>')
 		}
 
 class RemoteInvitationSendForm(forms.Form):
