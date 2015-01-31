@@ -5,6 +5,7 @@ import jsonschema
 import grequests 
 import datetime
 import hmac
+import hashlib
 import uuid
 
 from django.db import models
@@ -12,7 +13,7 @@ from django.core.cache import get_cache
 from django_extensions.db.models import TimeStampedModel
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.core.validators import RegexValidator
+from django.core.validators import URLValidator, RegexValidator
 from django.utils import timezone
 
 from jsonschema import Draft4Validator
@@ -26,9 +27,45 @@ def path_to_schema():
 	return file_path
 
 
+def default_config_json():
+	return """{
+   "fieldsets":[
+      {
+         "title":"Example Fieldset",
+
+         "fields":[
+            "exampleTextInput",
+            "exampleBooleanInput"
+         ],
+
+         "helpText":"Your fieldset's description is optional and goes here."
+      }
+   ],
+
+   "fields":{
+
+      "exampleTextInput":{
+         "type":"text",
+         "title":"Example Text",
+         "description":"An example text inupt",
+         "default":"Supremote rocks!",
+         "maxLength":30
+      },
+
+      "exampleBooleanInput":{
+         "type":"boolean",
+         "title":"Example Boolean Input",
+         "description":"It's rendered as a checkbox on web and as a switch on iOS",
+         "default":false
+      }
+
+   }
+}
+	"""
+
 def get_body_signature(body, secret, transaction_id):
 	body_str = json.dumps(body)
-	signature_maker = hmac.new(str(secret))
+	signature_maker = hmac.new(str(secret), '', hashlib.sha1)
 	signature_maker.update(body_str)
 	signature_maker.update(str(transaction_id))
 	return signature_maker.hexdigest()
@@ -37,7 +74,8 @@ def get_headers(signature, transaction_id):
 	return {
 		'Content-Type': 'application/json',
 		'X-Supremote-Signature': signature,
-		'X-Supremote-Transaction-Id': str(transaction_id)
+		'X-Supremote-Transaction-Id': str(transaction_id),
+		'User-Agent': 'Supremote/1.0'
 	}
 
 
@@ -75,11 +113,11 @@ class Remote(TimeStampedModel):
 	key = models.SlugField(max_length=120, unique=True)
 	developer = models.ForeignKey('users.User', related_name="developer")
 	endpoint = models.URLField(null=True, blank=True)
-	configuration = models.TextField()
+	configuration = models.TextField(default=default_config_json())
 	secret = EncryptedCharField(max_length=36)
 	users = models.ManyToManyField('users.User')
 
-	allow_all_origins = models.BooleanField(default=False)
+	allow_all_origins = models.BooleanField(default=False, verbose_name="Development mode enabled")
 
 	def save(self, *args, **kwargs):
 		if not self.pk:
@@ -150,13 +188,14 @@ class Remote(TimeStampedModel):
 			request_body = {
 				'user': user_email,
 				'remote_key': self.key,
-				'data': values
+				'data': values,
+				'updated': str(timezone.now()),
 			}
 
 			transaction_id = uuid.uuid4()
 			signature = get_body_signature(request_body, self.secret, transaction_id)
 
-			grequests.post(
+			r = grequests.post(
 				self.endpoint,
 				data=json.dumps(request_body),
 				headers=get_headers(signature, transaction_id)
@@ -167,7 +206,7 @@ class Remote(TimeStampedModel):
 		action_dictionary = configuration['fields'].get(action_name)
 
 		if action_dictionary:
-			endpoint = action_dictionary['endpoint']
+			endpoint = action_dictionary.get('endpoint') or self.endpoint or None
 			throttle = action_dictionary['throttle']
 			throttle_threshold = timezone.now() - datetime.timedelta(seconds=throttle)
 
@@ -180,27 +219,27 @@ class Remote(TimeStampedModel):
 			).count()
 			
 			if throttle_entry_count == 0:
-				# Action must be triggered.
-				request_body = {
-					'user': user_email,
-					'remote_key': self.key,
-					'data': {
-						'action_id': action_name,
-						'triggered': str(timezone.now()),
-					}
-				}
-
-				transaction_id = uuid.uuid4()
-				signature = get_body_signature(request_body, self.secret, transaction_id)
-				headers = get_headers(signature, transaction_id)
-
 				self.emit_socket_event('action', action_name=action_name)
+				if endpoint:
+					# Action must be triggered.
+					request_body = {
+						'user': user_email,
+						'remote_key': self.key,
+						'data': {
+							'action_id': action_name,
+							'triggered': str(timezone.now()),
+						}
+					}
 
-				grequests.post(
-					endpoint,
-					data=json.dumps(request_body),
-					headers=headers
-				).send()
+					transaction_id = uuid.uuid4()
+					signature = get_body_signature(request_body, self.secret, transaction_id)
+					headers = get_headers(signature, transaction_id)
+
+					grequests.post(
+						endpoint,
+						data=json.dumps(request_body),
+						headers=headers
+					).send()
 
 				# FIXME: Put actual response status code.
 				ActionThrottle(
@@ -339,8 +378,12 @@ class Remote(TimeStampedModel):
 				raise ValidationError("{}: default value is not in {}".format(key, field["choices"]))
 
 		elif field["type"] == "action":
-			if not field["endpoint"].startswith("http"):
-				raise ValidationError("{}: endpoint must start with http or https.".format(key))
+			endpoint = field.get("endpoint")
+
+			if endpoint:
+				validator = URLValidator()
+				validator.schemes = ["http", "https"]
+				validator(field["endpoint"])
 
 			if not field["class"] in acceptable_action_classes:
 				raise ValidationError("{}: class must be one of {}".format(key, acceptable_action_classes))

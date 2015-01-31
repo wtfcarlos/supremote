@@ -229,8 +229,7 @@
             "type",
             "title",
             "throttle",
-            "class",
-            "endpoint"
+            "class"
          ]
       }
    },

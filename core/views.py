@@ -19,6 +19,7 @@ from braces.views import LoginRequiredMixin, UserPassesTestMixin
 from rest_framework.authtoken.models import Token
 
 import json
+import hashlib
 import collections
 import datetime
 
@@ -40,7 +41,7 @@ def TestActionReceiveView(request):
 	
 	transaction_id = request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID']
 
-	signature_maker = hmac.new(str(remote_secret))
+	signature_maker = hmac.new(str(remote_secret), '', hashlib.sha1)
 	signature_maker.update(request.body)
 	signature_maker.update(transaction_id)
 
@@ -60,7 +61,7 @@ def TestEndpointProcessView(request):
 	
 	transaction_id = request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID']
 
-	signature_maker = hmac.new(str(remote_secret))
+	signature_maker = hmac.new(str(remote_secret), '', hashlib.sha1)
 	signature_maker.update(request.body)
 	signature_maker.update(transaction_id)
 
