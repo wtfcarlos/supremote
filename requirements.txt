@@ -1,6 +1,5 @@
 Django==1.7.1
 Fabric==1.8.1
-Werkzeug==0.9.6
 argparse==1.2.1
 cffi==0.8.6
 cryptography==0.7.1
