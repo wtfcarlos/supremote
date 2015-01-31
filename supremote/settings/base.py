@@ -157,6 +157,8 @@ DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
 }
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 ENCRYPTED_FIELDS_KEYDIR = os.path.join(PROJECT_ROOT, 'fieldkeys')
 
 # django-compressor settings
