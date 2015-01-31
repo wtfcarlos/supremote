@@ -119,6 +119,10 @@ class Remote(TimeStampedModel):
 
 	allow_all_origins = models.BooleanField(default=False, verbose_name="Development mode enabled")
 
+	def delete(self):
+		self.delete_cache()
+		return super(Remote, self).delete()
+
 	def save(self, *args, **kwargs):
 		if not self.pk:
 			self.secret = uuid.uuid4()
@@ -257,6 +261,15 @@ class Remote(TimeStampedModel):
 
 	def get_configuration(self):
 		return json.loads(self.configuration)
+
+	def delete_cache(self):
+		conn = get_redis_connection('default')
+		cache = get_cache('default')
+		cache.delete_pattern(self.get_cache_key())
+		cache.delete_pattern(self.get_type_cache_key())
+		cache.delete_pattern(self.get_domains_key())
+		conn.delete(self.get_allow_all_key())
+
 
 	def get_types(self):
 		cache = get_cache('default')
