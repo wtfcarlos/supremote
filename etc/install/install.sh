@@ -63,6 +63,7 @@ yes | apt-add-repository ppa:chris-lea/node.js
 # Install dart.
 apt-get update
 apt-get install -y nodejs
+apt-get install -y libffi-dev
 
 
 # Update ruby gems system
