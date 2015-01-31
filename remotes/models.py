@@ -164,7 +164,7 @@ class Remote(TimeStampedModel):
 		return ret
 
 	def emit_socket_event(self, event_type, action_name=None):
-		socket_emit_url = 'http://localhost:9000/emit/'
+		socket_emit_url = 'http://localhost:9000/private/io/emit/'
 		emit_password = os.environ['SUPREMOTE_SOCKET_KEY']
 
 		request_body = {

@@ -17,14 +17,8 @@ redisClient.select(1, function() {
 	var bodyParser = require('body-parser');
 	app.use(bodyParser.json());
 
-	// Example page for testing.
-	app.get('/', function (req, res) {
-	  res.sendfile(__dirname + '/index2.html');
-	});
-
-
 	// Endpoint for emitting from the django server.
-	app.post('/emit', function(req, res) {
+	app.post('/private/io/emit', function(req, res) {
 	    // Get emission password from system variable
 	    var emission_key = process.env.SUPREMOTE_SOCKET_KEY
 	    var received_key = req.body.password;
@@ -60,13 +54,12 @@ redisClient.select(1, function() {
 
 
 	io.on('connection', function (socket) {
-
 		socket.on('disconnect', function(data) {
-			console.log("DISCONNECTED!!!");
+			console.log("DISCONNECTED");
 		});
 
 		socket.on('reconnect', function(data) {
-			console.log("RECONECCTED");
+			console.log("RECONNECTED");
 		});
 
 	  
