@@ -84,7 +84,7 @@ redisClient.select(1, function() {
 			redisClient.get(allowAllOriginsKey, function(error, reply) {
 				if (reply === null && typeof reply === "object") {
 					socket.emit('not-found', {'error': 'No such remote key: ' + room_name});
-					socket.leave();
+					socket.leave(room_name);
 				} else {
 
 					if (parseInt(reply) == 0) {
@@ -94,7 +94,7 @@ redisClient.select(1, function() {
 							if(domainList !== null) {
 								if(domainList.indexOf(host) <= -1) {
 									socket.emit('unauthorized', 'This origin is not allowed: ' + host + '. Closing connection now.');
-									socket.leave();
+									socket.leave(room_name);
 								}
 							}
 
