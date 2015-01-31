@@ -5,3 +5,4 @@
 /sockets/node_modules
 /sockets/*.log
 /node_modules
+/supremote/settings/production.py
