@@ -11,16 +11,48 @@
 		{% csrf_token %}
 		{% bootstrap_form_errors form %}
 		{% bootstrap_field form.name %}
-		{% bootstrap_field form.endpoint %}
-		<div class="form-group">
-			<label class="control-label" for="id_secret">
-			Secret</label>
-			<input class="form-control" id="id_secret" title="Your remote&#39;s API Secret. Click to reveal it." type="password" value="{{ remote.secret }}" />
-			<span class="help-block">Your remote's <a href="#">API Secret.</a> Click to reveal it.
-			</span>
+
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="form-group">
+					<label class="control-label" for="id_secret">
+					Key</label>
+					<input class="form-control" disabled title="A unique key for your remote." type="text" value="{{ remote.key }}" />
+					<span class="help-block">A unique key for your remote.
+					</span>
+				</div>
+			</div>
+
+			<div class="col-sm-6">
+				<div class="form-group">
+					<label class="control-label" for="id_secret">
+					Secret</label>
+					<input class="form-control" id="id_secret" title="Your remote&#39;s API Secret. Click to reveal it." type="password" value="{{ remote.secret }}" />
+					<span class="help-block">Your remote's <a href="#">API Secret.</a> Click to reveal it.
+					</span>
+				</div>
+			</div>
+
 		</div>
-		<a href="{% url 'core:remote_manage_origins' remote_id=remote.pk remote_key=remote.key %}" class="btn btn-info btn-block">Manage Allowed Origins</a>
+		
+		{% bootstrap_field form.endpoint %}
+
+		<div class="row">
+			<div class="col-sm-6">
+			{% bootstrap_field form.allow_all_origins %}	
+		</div>
+
+		<div class="col-sm-6">
+			<a href="{% url 'core:remote_manage_origins' remote_id=remote.pk remote_key=remote.key %}" class="btn btn-info btn-block">Manage Allowed Origins</a>
+		</div>
+		</div>
+		
+
+		
+		
 		{% bootstrap_field form.configuration %}
+		
+		
 		<div id="editor"></div>
 		
 	</form>
