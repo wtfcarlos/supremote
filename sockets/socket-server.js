@@ -19,7 +19,7 @@ redisClient.select(1, function() {
 
 	// Example page for testing.
 	app.get('/', function (req, res) {
-	  res.sendfile(__dirname + '/index.html');
+	  res.sendfile(__dirname + '/index2.html');
 	});
 
 
