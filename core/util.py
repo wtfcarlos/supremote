@@ -10,7 +10,7 @@ class RemoteFieldFactory(object):
 				value,
 				prefix=key,
 				title=field['title'],
-				description=field['description'],
+				description=field.get('description', ''),
 				max_length=field['maxLength'],
 				initial=initial_value
 			)
@@ -20,7 +20,7 @@ class RemoteFieldFactory(object):
 				value,
 				prefix=key,
 				title=field['title'],
-				description=field['description'],
+				description=field.get('description', ''),
 				choice_range = field['range'],
 				initial=initial_value
 			)
@@ -30,7 +30,7 @@ class RemoteFieldFactory(object):
 				value,
 				prefix=key,
 				title=field['title'],
-				description=field['description'],
+				description=field.get('description', ''),
 				default_choice = field['default'],
 				initial=initial_value
 			)
@@ -40,7 +40,7 @@ class RemoteFieldFactory(object):
 				value,
 				prefix = key,
 				title = field['title'],
-				description = field['description'],
+				description=field.get('description', ''),
 				choices = field['choices'],
 				initial=initial_value
 			)
