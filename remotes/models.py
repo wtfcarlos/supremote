@@ -285,14 +285,14 @@ class Remote(TimeStampedModel):
 		cache.set(key, types, None)
 
 	def get_values(self):
-		cache = get_cache('default')
+		conn = get_redis_connection('default')
 		key = self.get_cache_key()
-		return json.loads(cache.get(key, '{}'))
+		return json.loads(conn.get(key) or '{}')
 
 	def save_values(self, values):
-		cache = get_cache('default')
+		conn = get_redis_connection('default')
 		key = self.get_cache_key()
-		cache.set(key, json.dumps(values), None)
+		conn.set(key, json.dumps(values))
 
 	def save_default(self, key, field):
 		# Saves the default value for this key if the key does not have an associated value.
