@@ -54,54 +54,63 @@ redisClient.select(1, function() {
 
 
 	io.on('connection', function (socket) {
-		socket.on('disconnect', function(data) {
-			console.log("DISCONNECTED");
-		});
 
-		socket.on('reconnect', function(data) {
-			console.log("RECONNECTED");
-		});
-
-	  
 	 	socket.on('join', function (data) {
 			// Get origin
 			// Get room name
-			var room_name = data;
+			var roomName = data;
 
-			var allowAllOriginsKey = room_name + '.allow_all_origins';
-			var domainKey = room_name + '.domains';
+			var allowAllOriginsKey = roomName + '.allow_all_origins';
+			var domainKey = roomName + '.domains';
 			var host = parseUri(socket.request.headers.referer).host;
 
-			socket.join(room_name);
+			socket.join(roomName);
 
 			redisClient.get(allowAllOriginsKey, function(error, reply) {
 				if (reply === null && typeof reply === "object") {
-					socket.emit('not-found', {'error': 'No such remote key: ' + room_name});
-					socket.leave(room_name);
+					socket.emit('status', "No such remote key: " + roomName);
+					socket.leave(roomName);
 				} else {
 
 					if (parseInt(reply) == 0) {
 						// Check for permitted origin.
 						redisClient.smembers(domainKey, function(error, domainList) {
-							console.log(domainList);
-							if(domainList !== null) {
-								if(domainList.indexOf(host) <= -1) {
-									socket.emit('unauthorized', 'This origin is not allowed: ' + host + '. Closing connection now.');
-									socket.leave(room_name);
-								}
+							
+							if(domainList !== null && domainList.indexOf(host) <= -1) {
+								socket.emit('status', "This origin is not allowed: " + host + ". Closing connection now.");
+								socket.leave(roomName);
+							} else {
+								emitJoinEvent(roomName, socket);
 							}
 
 						});
 
 					} else {
-						socket.emit('info', 'This remote is setup to accept connections from any origin. This is alright for development purposes, but you should not be seeing this in a production environment.');
+						socket.emit("status", "This remote is setup to accept connections from any origin. This is alright for development purposes, but you should not be seeing this in a production environment.");
+						emitJoinEvent(roomName, socket);
 					}
 
 				}
+
+
+
 			});
 		});
 	});
 
+
+	function emitJoinEvent(roomName, socket) {
+		// Get the remote's values.
+		redisClient.get(roomName + '.values', function(error, reply) {
+
+			if (reply !== null) {
+				socket.emit('join', JSON.parse(reply));
+			} else {
+				socket.emit('join');
+			}
+			
+		});
+	}
 
 	// parseUri 1.2.2
 	// (c) Steven Levithan <stevenlevithan.com>
