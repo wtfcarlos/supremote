@@ -18,6 +18,7 @@ class SignupForm(UserCreationForm):
 
 	def __init__(self, *args, **kwargs):
 		super(SignupForm, self).__init__(*args, **kwargs)
+		self.fields['agree'] = forms.BooleanField(label=u'I have read and agree to the terms and conditions and privacy policy of this site.')
 		for key in self.fields:
 			self.fields[key].required = True
 

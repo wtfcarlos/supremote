@@ -5,3 +5,12 @@ body {
 #menu {
 	margin-top: 30px;
 }
+
+.footer, .footer a  {
+	color: #aaaaaa;
+	font-size: 12px;
+}
+
+.footer a {
+	margin-top: 10px;
+}

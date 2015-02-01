@@ -71,9 +71,20 @@
 
     <footer class="footer">
       <div class="container">
-            <div class="col-sm-12">
+      <div class="row">
+          <div class="col-sm-12">
                 <a href="https://www.digitalocean.com/?refcode=3464537df83b"><img src="{% static "images/do.png" %}" alt="Proudly Hosted by DigitalOcean" class="center-block" style="width: 150px;" /></a>
             </div>
+      </div>
+
+      <div class="row">
+          <div class="col-sm-12 text-center">
+              <a href="{% url 'core:terms' %}"><small>Terms &amp; Conditions</small></a>
+               | 
+              <a href="{% url 'core:privacy' %}"><small>Privacy Policy</small></a>
+          </div>
+      </div>
+            
       </div>
     </footer>
 
