@@ -177,11 +177,14 @@ class Remote(TimeStampedModel):
 		if action_name:
 			request_body.update({'action_name': action_name})
 
-		grequests.post(
-			socket_emit_url,
-			data=json.dumps(request_body),
-			headers={'Content-Type': 'application/json'}
-		).send()
+		try:
+			grequests.post(
+				socket_emit_url,
+				data=json.dumps(request_body),
+				headers={'Content-Type': 'application/json'}
+			).send()
+		except Exception:
+			pass
 
 	def update_endpoint(self, user_email):
 		self.emit_socket_event('update')
