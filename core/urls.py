@@ -5,6 +5,10 @@ from . import views
 
 urlpatterns = patterns('',
   url(r'^$', views.IndexView.as_view(), name="index"),
+
+  url(r'^terms/$', views.TermsAndConditionsView.as_view(), name="terms"),
+  url(r'^privacy/$', views.PrivacyView.as_view(), name="privacy"),
+
   url(r'^actions/$', views.TestActionReceiveView, name="actions"),
   url(r'^endpoint_process/$', views.TestEndpointProcessView, name="test_endpoint"),
 

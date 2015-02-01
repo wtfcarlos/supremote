@@ -72,6 +72,12 @@ def TestEndpointProcessView(request):
 	return HttpResponse()
 
 
+class TermsAndConditionsView(generic.TemplateView):
+	template_name = "core/terms.html"
+
+class PrivacyView(generic.TemplateView):
+	template_name = "core/privacy.html"
+
 class SupremoteLoginRequiredMixin(LoginRequiredMixin):
 	login_url = reverse_lazy("core:index")
 
