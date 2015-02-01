@@ -51,6 +51,11 @@
 							{% endif %}
 						{% endfor %}
 						</div>
+						<div class="panel-footer">
+							{% if fieldset.help_text %}
+								{{ fieldset.help_text }}
+							{% endif %}
+						</div>
 					</div>
 					{% endfor %}
 					<button class="btn btn-block btn-lg btn-primary" type="submit"><span class="glyphicon glyphicon-ok"></span> Update</button>
