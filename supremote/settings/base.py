@@ -181,6 +181,8 @@ CACHES = {
 MANDRILL_API_KEY = "NtH9zbLzVF269Nhxkq0qig"
 EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"
 
+SERVER_EMAIL = "reports@supremote.com"
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
