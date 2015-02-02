@@ -117,6 +117,7 @@ INSTALLED_APPS = (
     'invitations',
     'bootstrap3',
     'api',
+    'tutorials',
     'rest_framework',
     'rest_framework.authtoken',
 )

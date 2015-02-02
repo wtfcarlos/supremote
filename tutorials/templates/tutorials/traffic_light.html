@@ -1,0 +1,529 @@
+{% extends "core/titled_page.html" %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block extra_external_css %}
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+{% endblock extra_external_css %}
+
+{% block extra_external_js %}
+	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+
+
+{% endblock extra_external_js %}
+
+{% block extra_js %}
+<script>
+	$(document).ready(function() {
+
+	  hljs.configure({
+	  	'languages': ['json', 'html', 'python', 'javascript']
+	  });
+
+	  $('pre').each(function(i, block) {
+	    hljs.highlightBlock(block);
+	  });
+	});
+</script>
+{% endblock extra_js %}
+
+{% block header %}
+	Traffic Light Websocket Tutorial
+{% endblock header %}
+
+{% block inner_content %}
+	
+	<div class="row">
+		<div class="col-sm-12 text-justify">
+			<p>
+				In this tutorial, we're going to create an interactive traffic light that you can view on your browser and control using Supremote.
+			</p>
+
+			<h2>Requirements and Assumptions</h2>
+			<p>
+				For this tutorial you will need:
+				<ul>
+					<li>A <a href="{% url 'core:signup' %}">supremote account.</a> (it's free)</li>
+					<li>A modern web browser</li>
+					<li>A text editor</li>
+					<li>An iOS device (optional)</li>
+				</ul>
+				We also assume that you're somewhat comfortable with:
+
+				<ul>
+					<li>HTML / CSS</li>
+					<li>Javascript</li>
+					<li>Writing JSON</li>
+					<li>Cloning a Git repository</li>
+					<li>Running and using a local HTTP server</li>
+				</ul>
+			</p>
+
+			<h2>Getting Started</h2>
+			<p>
+				The first thing you want to do is clone this tutorial's starting point from <a href="https://github.com/Supremote/examples">this GitHub repo</a>.
+			</p>
+			
+			<p>
+				Open up <code>index.html</code> on your browser and you will see something like this:
+
+				<p class="text-center">
+					<img src="{% static 'img/traffic_light/tf1.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+				</p>
+
+			</p>
+
+			<p>
+				The project that you just cloned contains all the CSS files necessary to make this example work, so we can concentrate on this writing the JS code relevant to tutorial's topic: working with Supremote to control this traffic light using websockets.
+			</p>
+
+			<h2>Creating a Remote</h2>
+			<h3>Basic Settings</h3>
+			<p>
+				Now that we have our local project up and running, it's time to create a Remote to control this traffic light.
+			</p>
+
+			<p>
+				Log in to Supremote and go to the <a href="{% url 'core:remote_list' %}">remotes section</a>. Now press the blue <a href="{% url 'core:remote_create' %}">create remote button</a> on the header.
+			</p>
+
+			<p>
+				To create a remote, we have to fill in some basic data about it and write a configuration file in JSON. Let's fill in the basic data first.
+			</p>
+
+			<p>
+				<dl class="dl-horizontal">
+				  <dt>Name</dt>
+				  <dd>This name is the title of your remote as it will appear on the remote lists on both the web and mobile clients. This title does not need to be unique and you can change it whenever you want. Let's set the name for now to "Traffic Light Tutorial" to make things clearer.</dd>
+				</dl>
+
+				<dl class="dl-horizontal">
+				  <dt>Key</dt>
+				  <dd>This key is a string containing only letters, numbers, underscores, and hyphens. It must be <b>unique</b> and it will serve as your remote's identifier across the platform. <b>You will not be able to change it later</b>. Set this value to whatever you want as long as these constraints are fulfilled.</dd>
+				</dl>
+
+				<dl class="dl-horizontal">
+				  <dt>Endpoint</dt>
+				  <dd>This is an optional <b>URL</b> that Supremote will use to contact a server using REST Webhooks. This setting is not relevant to this tutorial so we'll ignore it and leave it blank for now.</dd>
+				</dl>
+			</p>
+
+			<h3>Writing a Configuration File</h3>
+
+			<p>
+				A remote's configuration file is written using a simple JSON format. We have been provided with a starting point that looks like this:
+
+				<pre>
+{
+   "fieldsets":[
+      {
+         "title":"Example Fieldset",
+
+         "fields":[
+            "exampleTextInput",
+            "exampleBooleanInput"
+         ],
+
+         "helpText":"Your fieldset's description is optional and goes here."
+      }
+   ],
+
+   "fields":{
+
+      "exampleTextInput":{
+         "type":"text",
+         "title":"Example Text",
+         "description":"An example text inupt",
+         "default":"Supremote rocks!",
+         "maxLength":30
+      },
+
+      "exampleBooleanInput":{
+         "type":"boolean",
+         "title":"Example Boolean Input",
+         "description":"It's rendered as a checkbox on web and as a switch on iOS",
+         "default":false
+      }
+
+   }
+}				</pre>
+			</p>
+
+			<p>
+				The root object of this JSON file contains two child objects: <code>fields</code> and <code>fieldsets</code>. Let's begin by clearing out both of those objects so the configuration file looks like this:
+			</p>
+
+			<pre>
+{
+   "fieldsets":[
+
+   ],
+
+   "fields":{
+
+   }
+}</pre>
+
+			<p>As you can see, the <code>fieldsets</code> object is an array and the <code>fields</code> object is, well, an object. The first thing we're going to do is create a button to turn on the red light on our traffic light.</p>
+
+			<p>
+				Add the following code to the <code>fields</code> object:
+			</p>
+
+			<pre>
+"red": {
+  "type": "action",
+  "title": "Red",
+  "class": "danger",
+  "throttle": 0
+}
+</pre>
+
+		<p>
+			Let's break it down: this object's field name is <code>red</code>. This name is very relevant because we're going to use it to listen for when we press the button on the actual remote or the mobile app. Following is a property-by-property explanation of this object:
+		</p>
+
+		<p>
+			<dl class="dl-horizontal">
+				<dt><code>type</code></dt>
+				<dd>This property's value is <code>action</code>. This means that this field will be rendered as a button and that Supremote will emit a socket event when we press it.</dd>
+			</dl>
+
+			<dl class="dl-horizontal">
+				<dt><code>title</code></dt>
+				<dd>This one's pretty self-explanatory. This is the text that appears in the body of the button, in this case, <code>"Red"</code></dd>
+			</dl>
+
+			<dl class="dl-horizontal">
+				<dt><code>class</code></dt>
+				<dd>It's set to <code>danger</code>. This is relevant because it will render the button with a red hue.</dd>
+			</dl>
+
+			<dl class="dl-horizontal">
+				<dt><code>throttle</code></dt>
+				<dd>Represents the minimum number of seconds that we'll have to wait between presses on the button. If we press the button before the number of seconds elapses, Supremote will not emit any type of event or call any webhook endpoint. We're setting this property to <code>0</code> because we don't want to wait between button presses.</dd>
+			</dl>
+		</p>
+
+		<p>
+			We can add all the <code>field</code>s we want, but Supremote will not render them if they're not declared in a <code>fieldset</code>. 
+		</p>
+	
+		<p>Add the following element to the <code>fieldsets</code> array:</p>
+
+<pre>
+{
+  "title":"Light Controls",
+
+  "fields":[
+    "red"
+  ],
+
+  "helpText":"Press a button to turn on the corresponding light."
+}
+</pre>
+
+	<p>
+		Let's break it down as we did the last time:
+	</p>
+
+	<p>
+		<dl class="dl-horizontal">
+			<dt><code>title</code></dt>
+			<dd>Again, this property is pretty self-explanatory. This is the title of this fieldset as it will appear to this user's remote.</dd>
+		</dl>
+
+		<dl class="dl-horizontal">
+			<dt><code>fields</code></dt>
+			<dd>This array should only contain the names of any of the fields declared in this configuration file, in the order you want them to appear in. Since we only have one entry in the <code>fields</code> object, the only element in this array is <code>"red"</code>.</dd>
+		</dl>
+
+		<dl class="dl-horizontal">
+			<dt><code>helpText</code></dt>
+			<dd>This property is <i>optional</i> and will appear in the footer of the fieldset.</dd>
+		</dl>
+	</p>
+
+	<p>
+		After all of the above, your configuration file should look like this:
+	</p>
+
+	<pre>
+{
+   "fieldsets":[
+       {
+         "title":"Light Controls",
+         "fields":[
+            "red"
+         ],
+         "helpText":"Press a button to turn on the corresponding light."
+      }
+   ],
+
+   "fields":{
+      "red": {
+          "type": "action",
+          "title": "Red",
+          "class": "danger",
+          "throttle": 0
+      }
+   }
+}
+</pre>
+
+	<p>
+		So, this configuration file is basically saying:
+		<blockquote>
+			<p>
+				There's a <code>field</code> called <code>"red"</code>, which is an <code>action</code> of the <code>danger</code> class, with no timeout between triggers. And there's a <code>fieldset</code> called "Light Controls" which contains the "red" <code>action</code>.
+			</p>
+		</blockquote>
+	</p>
+
+	<p>
+		Press the Create button, and, if there are no errors, it should now appear in the list, just like this:
+	</p>
+
+	<p class="text-center">
+		<img src="{% static 'img/traffic_light/remote_list.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+	</p>
+
+	<p>
+		If you have an error in your configuration file you've likely made a typo in your code or your remote key is not unique. Re-check everything and save it until your remote list appears looks like the image above.
+	</p>
+
+	<p>
+		Click your remote's name and see it rendered:
+	</p>
+
+	<p class="text-center">
+		<img src="{% static 'img/traffic_light/remote_view1.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+	</p>
+
+	<p>This is how it looks like on the iOS app:</p>
+
+	<p class="text-center">
+		<img src="{% static 'img/traffic_light/remote_view_ios1.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+	</p>
+
+	<p>
+		We can press the button as many times as we want, but nothing will happen until we hook it up on our traffic light project. Let's do that now.
+	</p>
+
+	<h2>Hooking Up the Remote</h2>
+
+	<p>
+		Turn your attention to the project you just cloned, open <code>main.js</code> on your favorite text editor, and paste the code below:
+	</p>
+
+	<pre>
+var socket = io("https://www.supremote.com");
+
+function turnOffAllLights() {
+   $('#red').removeClass('on');
+   $('#yellow').removeClass('on');
+   $('#green').removeClass('on');
+
+   $('#red').addClass('off');
+   $('#yellow').addClass('off');
+   $('#green').addClass('off');
+}
+
+function turnOnLight(lightName) {
+   var lightId = '#' + lightName;
+    turnOffAllLights();
+    $(lightId).removeClass('off');
+    $(lightId).addClass('on');
+}
+</pre>
+
+		<p>
+			These are some simple functions that do exactly what we expect them to, turn off all the lights and turn on an individual light.
+		</p>
+
+		<p>
+			The first line of this code is what is really important. We're declaring a variable named <code>socket</code> that will serve as our live communication channel between Supremote's server and our web page.
+		</p>
+
+		<p>
+			It's time to hook up the pressing of our red button on our remote to the action of turning on the red light.
+		</p>
+
+		<h3>Event Listeners</h3>
+
+		<p>
+			Add the following code below the <code>var socket = (...)</code> line:
+		</p>
+
+		<pre>
+socket.on('connect', function(data) {
+   socket.emit('join', '&lt;YOUR-REMOTE-KEY&gt;');
+});
+
+socket.on('status', function(data) {
+   console.log(data);
+});
+</pre>
+
+		<p>
+			This goes without saying, but you must change the second argument of the <code>emit</code> function call from <code>&lt;YOUR-REMOTE-KEY&gt;</code> to your <i>actual</i> remote key.
+		</p>
+
+		<p>
+			Here, we're declaring two event listeners. One for the <code>connect</code> event and another one for the <code>status</code> event.
+		</p>
+
+		<p>
+			On the <code>connect</code> event listener, we're emitting a <code>join</code> event to the server, with the argument of our remote key. This is a request to join the broadcast room of our remote. Any number of clients can be connected at once to our remote's room.
+		</p>
+
+		<p>
+			On the <code>status</code> event listener, we're going to just log the data the server sends us, in case there is a problem or warning we should know about.
+		</p>
+
+		<h3>Listener Origins</h3>
+
+		<p>
+			Refresh the <code>index.html</code> file and open up the developer console. You probably will see a message like this printed in the console:
+		</p>
+
+		<pre class="nohighlight">
+This origin is not allowed: localhost. Closing connection now.</pre>
+
+		<p>
+			Oh, bother. Supremote protects against unauthorized access to our remote's broadcasts by using an origin whitelist. This can be a problem if we're running locally. 
+		</p>
+
+		<p>
+			Go to your <a href="{% url 'core:remote_list' %}">remote list</a> and click on the yellow gear icon next to your traffic light remote. In this page you can review and change your remote's settings, but for now, we want to click the checkbox labeled "Development mode enabled" and save the changes pressing the blue "Edit" button. If a remote is in development mode, it will accept connections from any origin, including local hosts.
+		</p>
+
+		<p>
+			Refresh and another message will appear on the console:
+		</p>
+
+		<pre class="nohighlight">
+This remote is setup to accept connections from any origin. This is alright for development purposes, but you should not be seeing this in a production environment.
+</pre>
+
+		<p>
+			This is a gentle warning that we should use the origin whitelist if we're ever to use Supremote in a production environment. If you can see the message above, you are now connected to your remote's broadcast room. You can now receive live events and updates from your remote.
+		</p>
+
+		<h3>Listening to the Button Press</h3>
+		<p>
+			We now need to listen when the user presses the button in either the web client or the mobile client. Add the following code below your two previous event listeners:
+		</p>
+
+		<pre>
+socket.on("#red", function(data) {
+    turnOnLight("red");
+});</pre>
+
+		<p>
+			You might have noticed that the name of the event is preceded with a hash symbol <code>#</code>. Supremote will emit events triggered by actions with that prefix to avoid event name conflicts. That means that your actions can have any name you want, even <code>error</code> and <code>connect</code>, because when you listen for them, the event names would be <code>#error</code> and <code>#connect</code>.
+		</p>
+
+		<p>
+			The <code>#red</code> event gets fired whenever a user presses the <code>red</code> button. In this listener we're just calling the <code>turnOnLight</code> function with the <code>"red"</code> argument to turn on the red light. Refresh the page and on another window or your iOS device press the red button. You should now see something like this:
+		</p>
+
+		<p class="text-center">
+			<img src="{% static 'img/traffic_light/tf2.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+		</p>
+
+		<p>
+			Just as an experiment, open the project in two windows. Press the button and watch as both red lights turn on. <i>exciting stuff, I tell ya hwhat.</i>
+		</p>
+
+		<h3>Hooking Up the Other Lights</h3>
+
+		<p>
+			It's pretty straightforward to use Supremote to hook up the other lights. Again, locate the yellow gear button on your remote list, and paste the following configuration file:
+		</p>
+
+		<pre>
+{
+   "fieldsets":[
+       {
+         "title":"Light Controls",
+         "fields":[
+            "red", "yellow", "green"
+         ],
+         "helpText":"Press a button to turn on the corresponding light."
+      }
+   ],
+
+   "fields":{
+      "red": {
+          "type": "action",
+          "title": "Red",
+          "class": "danger",
+          "throttle": 0
+      },
+      "yellow": {
+          "type": "action",
+          "title": "Yellow",
+          "class": "warning",
+          "throttle": 0
+      },
+      "green": {
+          "type": "action",
+          "title": "Green",
+          "class": "success",
+          "throttle": 0
+      }
+   }
+}
+</pre>
+
+		<p>
+			If you've been following, the only thing we did was add two extra <code>action</code>s, <code>yellow</code> and <code>green</code>, and added them to our <code>fieldset</code>.
+		</p>
+
+		<p>
+			Their color is given to them by their <code>class</code> properties: <code>warning</code> is yellow and <code>success</code> is green.
+		</p>
+
+		<p>
+			Again, open or refresh your remote and you will see it rendered like this:
+		</p>
+
+		<p class="text-center">
+			<img src="{% static 'img/traffic_light/remote_view_ios2.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+		</p>
+
+		<p>
+			This is an iOS screenshot, but it will be similarly rendered on the web platform.
+		</p>
+
+		<p>
+			Add these two event listeners to your <code>main.js</code> file, refresh, and turn on some lights:
+		</p>
+
+		<pre>
+socket.on("#green", function(data) {
+    turnOnLight("green");
+});
+
+socket.on("#yellow", function(data) {
+    turnOnLight("yellow");
+});
+</pre>
+
+		<p>
+			You should now be able to turn on the three colored lights:
+		</p>
+
+		<p class="text-center">
+			<img src="{% static 'img/traffic_light/tf3.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+		</p>
+
+		<p>
+			Check out <a href="">part two</a> of this tutorial to learn more about Supremote and finish up our traffic light project.
+		</p>
+
+		</div>
+	</div>
+
+{% endblock inner_content %}
