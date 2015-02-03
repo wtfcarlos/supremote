@@ -9,11 +9,13 @@
           </button>
         </div>
         <div class="navbar-collapse collapse" id="navbar-main">
-        {% if request.user.is_authenticated %}
+        
           <ul class="nav navbar-nav">
+          {% if request.user.is_authenticated %}
             <li>
               <a href="{% url 'core:remote_list' %}">Remotes</a>
-            </li>    
+            </li>   
+          {% endif %} 
             <li>
               <a href="{% url 'tutorials:index' %}">Tutorials</a>
             </li>
@@ -22,7 +24,7 @@
             </li>
           </ul>
         
-          
+          {% if request.user.is_authenticated %}
           <ul class="nav navbar-nav navbar-right">
 
             <li class="dropdown">
@@ -37,7 +39,7 @@
               </ul>
             </li>
           </ul>
-          {% endif %}
+          {% endif %} 
         </div>
       </div>
     </div>

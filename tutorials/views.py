@@ -5,5 +5,8 @@ from django.views import generic
 class IndexView(generic.TemplateView):
 	template_name = "tutorials/index.html"
 
-class TrafficLightTutorialView(generic.TemplateView):
-	template_name = "tutorials/traffic_light.html"
+class TrafficLightTutorialPart1View(generic.TemplateView):
+	template_name = "tutorials/traffic_light_pt1.html"
+
+class TrafficLightTutorialPart2View(generic.TemplateView):
+	template_name = "tutorials/traffic_light_pt2.html"

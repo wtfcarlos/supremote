@@ -1,0 +1,39 @@
+{% extends "core/titled_page.html" %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block extra_external_css %}
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+{% endblock extra_external_css %}
+
+{% block extra_external_js %}
+	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+{% endblock extra_external_js %}
+
+{% block extra_js %}
+<script>
+	$(document).ready(function() {
+
+	  hljs.configure({
+	  	'languages': ['json', 'html', 'python', 'javascript']
+	  });
+
+	  $('pre').each(function(i, block) {
+	    hljs.highlightBlock(block);
+	  });
+	});
+</script>
+{% endblock extra_js %}
+
+
+{% block inner_content %}
+	
+	<div class="row">
+		<div class="col-sm-12 text-justify">
+			{% block tutorial_content %}
+				
+			{% endblock tutorial_content %}
+		</div>
+	</div>
+
+{% endblock inner_content %}

@@ -1,42 +1,19 @@
-{% extends "core/titled_page.html" %}
+{% extends "tutorials/tutorial.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
 
-{% block extra_external_css %}
-		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
-{% endblock extra_external_css %}
-
-{% block extra_external_js %}
-	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
-
-
-{% endblock extra_external_js %}
-
-{% block extra_js %}
-<script>
-	$(document).ready(function() {
-
-	  hljs.configure({
-	  	'languages': ['json', 'html', 'python', 'javascript']
-	  });
-
-	  $('pre').each(function(i, block) {
-	    hljs.highlightBlock(block);
-	  });
-	});
-</script>
-{% endblock extra_js %}
-
 {% block header %}
-	Traffic Light Websocket Tutorial
+	Traffic Light Websocket Tutorial (Part One)
 {% endblock header %}
 
-{% block inner_content %}
+{% block tutorial_content %}
 	
-	<div class="row">
-		<div class="col-sm-12 text-justify">
 			<p>
 				In this tutorial, we're going to create an interactive traffic light that you can view on your browser and control using Supremote.
+			</p>
+
+			<p>
+				By the end of this tutorial, you will be able to undestand the basic functioning of Supremote and will be able to write configuration files containing <code>action</code>s and <code>fieldset</code>s and hook them up using Supremote's <a href="http://socket.io">socket.io</a> interface.
 			</p>
 
 			<h2>Requirements and Assumptions</h2>
@@ -512,8 +489,8 @@ socket.on("#yellow", function(data) {
 </pre>
 
 		<p>
-			You should now be able to turn on the three colored lights:
-		</p>
+			Here, we added two additional event listeners, <code>#green</code> and <code>#yellow</code>, which turn on the corresponding light on the canvas. You should now be able to turn on the three colored lights:
+		</p>	
 
 		<p class="text-center">
 			<img src="{% static 'img/traffic_light/tf3.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
@@ -523,7 +500,4 @@ socket.on("#yellow", function(data) {
 			Check out <a href="">part two</a> of this tutorial to learn more about Supremote and finish up our traffic light project.
 		</p>
 
-		</div>
-	</div>
-
-{% endblock inner_content %}
+{% endblock tutorial_content %}

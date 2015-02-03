@@ -1,0 +1,266 @@
+{% extends "tutorials/tutorial.html" %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block header %}
+    Traffic Light Websocket Tutorial (Part Two)
+{% endblock header %}
+
+{% block tutorial_content %}
+    <p>
+        On <a href="{% url 'tutorials:traffic_light_1' %}">part one</a> of this tutorial we created and hooked up a basic Supremote remote instance to a traffic light made CSS3. In this part of the tutorial we will add even more features to this project.
+    </p>
+
+    <p>
+        Supremote is very flexible, because everything that we can do in Javascript, we can hook it up to an <code>action</code> socket event. To review, let's add the following code to our Traffic Light Tutorial remote configuration file's <code>fields</code> object:
+    </p>
+
+    <pre>
+"refresh": {
+   "type": "action",
+   "title": "Refresh",
+   "class": "default",
+   "throttle": 0
+}
+</pre>
+
+    <p>
+       If you followed part one of this tutorial, you'll know that all this code does is add a new <code>action</code> field (a button) called <code>refresh</code> with a <code>default</code> grey color.
+    </p>
+
+    <p>
+       You might also recall that it doesn't matter how many fields we declare, we must place them inside a <code>fieldset</code> for them to be rendered in a remote. We plan to use this <code>refresh</code> action to reload our browser window upon pressing. But that's not quite a Light Action, is it? Let's create a second <code>fieldset</code> to contain other kinds of <code>action</code>s. Add the following element to the <code>fieldsets</code> array on your remote's configuration file:
+    </p>
+
+    <pre>
+{
+   "title": "Page Controls",
+   "fields": [
+      "refresh"
+   ]
+}
+</pre>
+
+    <p>
+       Your remote's configuration file should look like this after the modifications above:
+    </p>
+
+    <pre>
+{
+   "fieldsets":[
+       {
+         "title":"Light Controls",
+
+         "fields":[
+            "red", "yellow", "green"
+         ],
+
+         "helpText":"Press a button to turn on the corresponding light."
+      },
+      {
+        "title": "Page Controls",
+        
+        "fields": [
+            "refresh"
+        ]
+      }
+   ],
+
+   "fields":{
+
+      "red": {
+          "type": "action",
+          "title": "Red",
+          "class": "danger",
+          "throttle": 0
+      },
+      
+      "yellow": {
+          "type": "action",
+          "title": "Yellow",
+          "class": "warning",
+          "throttle": 0
+      }, 
+      
+      "green": {
+          "type": "action",
+          "title": "Green",
+          "class": "success",
+          "throttle": 0
+      },
+      
+      "refresh": {
+          "type": "action",
+          "title": "Refresh",
+          "class": "default",
+          "throttle": 0
+      }
+   }
+}
+   </pre>
+
+   <p>
+      Rendered, your remote should look like this:
+   </p>
+
+   <p class="text-center">
+      <img src="{% static 'img/traffic_light/remote_view2.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+   </p>
+
+   <p>
+      Let's add the following event listener to our <code>main.js</code> file:
+   </p>
+
+   <pre>
+socket.on("#refresh", function(data) {
+    window.location.reload();
+});
+</pre>
+
+   <p>
+      All this event listener does is refresh our browser when we press the button. The <code>refresh</code> action field emits a <code>#refresh</code> socket event each time it's pressed. Try it out and play around with the lights and refreshing.
+   </p>
+
+   <p>
+      Up to this point, all we have done is use <code>action</code> fields, but Supremote offers other kinds of fields that we can use. Add the following field to your configuration file's <code>fields</code> object:
+   </p>
+
+   <pre>
+"autoMode": {
+   "type": "boolean",
+   "title": "Auto-Mode enabled",
+   "description": "The traffic light will animate automatically.",
+   "default": false
+}
+</pre>
+
+   <p>
+      This is a <code>boolean</code> type action. This type of action is rendered as a <code>checkbox</code> on the web client and as an <code>UISwitch</code> on the iOS client. Add the <code>autoMode</code> field to your "Page Controls" <code>fieldset</code>.
+   </p>
+
+   <p>
+      The <code>boolean</code> type fields also feature a <code>default</code> required property. This is the initial value that this field will have upon its first rendering. 
+   </p>
+
+   <p>
+      You may also notice that it has a <code>description</code> property. This property is accepted by all types of <code>field</code>s and it is optional. If set, it will appear only on the web interface.
+   </p>
+
+   <p>
+       This is how it looks like rendered in the iOS client:
+   </p>
+
+   <p class="text-center">
+      <img src="{% static 'img/traffic_light/remote_view_ios3.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+   </p>
+
+   <p>
+      When it comes to listening to remote events that are not triggered by <code>action</code>s, we dont use the action's name, but we listen for an <code>update</code> socket event. Add the following to your <code>main.js</code> file:
+   </p>
+
+   <pre>
+var autoMode = false;
+
+socket.on('update', function(data) {
+    autoMode = data.autoMode;
+    updateState();
+});
+
+function updateState() {
+   if (autoMode) {
+      $('#autoMode').text("ON"); 
+         // If autoMode is true, turn off all the lights and add the css classes necessary for the animation.
+         turnOffAllLights();
+         $('#red').addClass('red-animation');
+         $('#green').addClass('green-animation');
+         $('#yellow').addClass('yellow-animation');
+    } else {
+         $('#autoMode').text("OFF");
+         // If autoMode is false, turn off all the lights and remove the css classes necessary for the animation.
+         $('#red').removeClass('red-animation');
+         $('#green').removeClass('green-animation');
+         $('#yellow').removeClass('yellow-animation');
+         turnOffAllLights();
+   }
+}</pre>
+
+   <p>
+      First, we declare an <code>autoMode</code> variable. The behavior of our traffic light will change depending on this variable's value.
+   </p>
+
+   <p>
+      Next, we listen to the <code>update</code> event. What we do on that listener is change the value of the <code>autoMode</code> variable to the new value that comes from the server, in the <code>data</code> argument to the listener as a JSON object. We then call the <code>updateState</code> function, which handles the actual code used to start the light's animation.
+   </p>
+
+   <p>
+      Also, modify the <code>turnOnLight</code> function to only do it's thing when <code>autoMode</code> is disabled:
+   </p>
+
+   <pre>
+function turnOnLight(lightName) {
+   // Will only work if autoMode is disabled.
+   if (!autoMode) {
+      var lightId = '#' + lightName;
+      turnOffAllLights();
+      $(lightId).removeClass('off');
+      $(lightId).addClass('on');
+   }
+}
+</pre>
+
+   <p>
+      To make things a little bit less abstract, also add the following to your <code>index.html</code> file, just below the <code>trafficlight</code> <code>div</code> element:
+   </p>
+
+<pre>
+&lt;div id=&quot;status&quot;&gt;<br/>   Automatic Mode: &lt;span id=&quot;autoMode&quot;&gt;OFF&lt;/span&gt;<br/>&lt;/div&gt;
+</pre>
+
+
+   <p>
+      Save your file, press the "Refresh" button on your remote (or on your browser), and turn on the "Auto mode enabled" switch on the web or mobile interfaces. The traffic light is now animating!, also, there's a text on the top left corner that says that the automatic mode is on:
+   </p>
+
+   <p class="text-center">
+      <img src="{% static 'img/traffic_light/tf4.png' %}" alt="Traffic light" class="img img-responsive img-thumbnail" />
+   </p>
+
+   <p>
+      You can toggle the switch and you will see that its value is immediately shown on the browser. When you turn off the automatic mode, you can turn individual lights on or off as you were able to previously.
+   </p>
+
+   <p>
+      Leave automatic mode ON, and refresh the page. Now, we have a problem: the remote says automatic mode is ON, and the page says automatic mode is OFF. Why is this?
+   </p>
+
+   <p>
+      We hooked up the change of the <code>autoMode</code> variable to the <code>update</code> event. Since Supremote only emits <code>update</code> events when a value on the remote changes, we're out of sync with the remote's actual values. There must be a way to automatically sync up with the server.
+   </p>
+
+   <p>
+      Fortunately, there is a way to do just that. Each time you join a remote broadcast room successfully, Supremote emits a <code>join</code> event, that contains the remote's latest data. If we listen to that event, we can sync up with the server automatically upon connection. Add this code to your <code>main.js</code> file:
+   </p>
+
+   <pre>
+socket.on('join', function(data) {
+   // If we could connect to our remote's room, this event is fired.
+   // The data argument contains our remote's latest state.
+   console.log(data);
+   autoMode = data.autoMode;
+   updateState();
+});
+</pre>
+
+   <p>
+      So now, it does not matter when you connect to the server, the remote's state is always synced up with your project and updated live.
+   </p>
+
+   <p>
+      This is the end of this tutorial. If you liked it please tweet us <a href="https://www.twitter.com/supremote">@supremote</a> and let us know. We can't wait to see what you can create using Supremote.
+   </p>
+
+   <p>
+      Remember that Supremote doesn't only notify you of remote events via web sockets, it also supports a <a href="">REST Webhooks</a> interface, so you can also hook up data and actions to any server that's connected to the internet.
+   </p>
+
+{% endblock tutorial_content %}
