@@ -25,10 +25,14 @@
 
          <link rel="stylesheet" href="{% static "css/sticky-footer.css" %}">
          <link rel="stylesheet" href="{% static "css/sweet-alert.css" %}">
+
     {% endcompress %}
 
 
     {% compress css %}
+    <style>
+    .glyphicon-education:before{content:"\e233"}
+    </style>
         {% comment %}
             Per-page CSS is compressed separately so that the global stuff doesn't get re-downloaded each time 
         {% endcomment %}

@@ -8,7 +8,7 @@
 			 <div class="jumbotron">
                 <h1>Universal Configuration, Built for Developers</h1>
                 <p>Supremote is a simple and easy way to create, share, and manage remote configuration panels, complete with a REST API and action hooks.</p>
-                <p><a href="{% url 'core:signup' %}" class="btn btn-primary btn-lg">Sign Up</a></p>
+                <p><a href="{% url 'core:signup' %}" class="btn btn-success btn-lg"><i class="glyphicon glyphicon-check"></i> Sign Up</a></p>
               </div>
 		</div>
 	</div>
@@ -16,13 +16,30 @@
 		<div class="row">
 			
 			<div class="col-sm-6">
-				<h2>About</h2>
-				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-				tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-				quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-				consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-				cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-				proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+				<div class="row">
+					<div class="col-sm-12">
+						<h2>About</h2>
+
+						<p>Supremote is a programmable, developer-friendly platform that allows you to configure anything, universally.</p>
+
+						<p>It's very easy to integrate Supremote into your existing application. Configure anything from web servers,  personal computers, application servers, to live websites, and very soon, individual desktop application instances.</p>
+					</div>
+					
+				</div>
+
+				<div class="row">
+					<div class="col-sm-6">
+						<a href="{% url 'docs:index' %}" class="btn btn-info btn-block btn-lg">
+						<i class="glyphicon glyphicon-book"></i> Docs</a>
+					</div>
+					<div class="col-sm-6">
+						<a href="{% url 'tutorials:index' %}" class="btn btn-default btn-block btn-lg">
+						<i class="glyphicon glyphicon-education"></i> Tutorials</a>
+					</div>
+				</div>
+	
+
 			</div>
 
 			<div class="col-sm-6">
@@ -30,7 +47,7 @@
 				<form action="" method="POST" novalidate>
 					{% csrf_token %}
 					{% bootstrap_form form %}
-					<button class="btn btn-block btn-primary">Login</button>
+					<button class="btn btn-block btn-primary"><i class="glyphicon glyphicon-log-in"></i> Login</button>
 				</form>
 
 			</div>
