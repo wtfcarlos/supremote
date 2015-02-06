@@ -1,19 +1,637 @@
-{% extends "core/titled_page.html" %}
+{% extends "tutorials/tutorial.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
-
 {% block header %}
-	Docs
+   Docs
 {% endblock header %}
+{% block tutorial_content %}
+   <h2>Index</h2>
+   <ol>
+      <li>
+         <a href="#introduction">Introduction</a>
+      </li>
+      <li>
+         <a href="#remotes">Remotes</a>
+         <ul>
+            <li>
+               <a href="#initial-properties">Initial Properties</a>
+            </li>
+            <li>
+               <a href="#post-creation-properties">Post-Creation Properties</a>
+            </li>
+            <li>
+               <a href="#fields">The <code>fields</code> object</a>
+               <ul>
+                  <li><a href="#action-fields">Action Fields</a></li>
+                  <li><a href="#text-fields">Text Fields</a></li>
+                  <li><a href="#boolean-fields">Boolean Fields</a></li>
+                  <li><a href="#multiple-choice-fields">Multiple-Choice Fields</a></li>
+                  <li><a href="#number-fields">Number Fields</a></li>
+               </ul>
+            </li>
+            <li><a href="#fieldsets">The <code>fieldsets</code> object</a></li>
+            <li><a href="#full-example">Full Example</a></li>
+         </ul>
+      </li>
+      
+   </ol>
+   <h2 id="introduction" class="anchor">Introduction</h2>
+   <p>
+   Supremote is a platform that allows you to define a "remote" (user interface) that notifies your applications when the user performs an action or changes a value.
+   </p>
+   <p>
+   You can use Supremote for virtually any kind of action / setting that your application or server requires. You could use Supremote to quickly change an online tax application's global tax rate, to enable / disable your site's debug mode at the touch of a switch - Really, anything that you can do by logging in on a shell and / or changing source code.
+   </p>
+   <p>
+   Supremote communicates with your server using two different mechanisms, <b>web sockets</b> and <b>web hooks</b>. You can also consult your remote's current values using a simple <b>REST API</b>.
+   </p>
+   <h2 id="remotes" class="anchor">Remotes</h2>
+   <hr>
+   <p>
+   The remote is the centerpiece of the Supremote platform. A remote is an object that represents a user interface. The user interface in itself is defined using a simple JSON format.
+   </p>
 
-{% block inner_content %}
-	
-	<div class="row">
-		<div class="col-sm-12 text-justify">
-			
-			
+   <h5 id="initial-properties" class="anchor">Initial Remote Properties</h5>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Property Name</th>
+         <th>Description</th>
+      </tr>
 
-		</div>
-	</div>
+      <tr>
+         <td>Name</td>
+         <td>This name is the title of your remote as it will appear on the remote lists on both the web and mobile clients. This title does not need to be unique and it's editable at any time.</td>
+      </tr>
 
-{% endblock inner_content %}
+      <tr>
+         <td>Key</td>
+         <td>This key is a string containing only letters, numbers, underscores, and hyphens. It must be <b>unique</b> and it will serve as your remote's identifier across the platform. <b>Once set, it is not editable</b>.</td>
+      </tr>
+
+      <tr>
+         <td>Endpoint</td>
+         <td>Supremote will contact this URL when a change in the remote occurs or if an action without its own endpoint is triggered. It is <b>optional</b> and editable at any time.</td>
+      </tr>
+
+      <tr>
+         <td>Configuration</td>
+         <td>A remote is configured using a simple JSON format. This format consists of two main objects: <a href="#fields"><code>fields</code></a> and <a href="#fieldsets"><code>fieldsets</code></td>
+      </tr>
+
+   </table>
+   <p>
+   These are properties that are available once your remote is created. These can be found on your remote's "Edit Configuration" page.
+   </p>
+   <h5 id="post-creation-properties" class="anchor">Post-Creation Remote Properties</h5>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Property Name</th>
+         <th>Description</th>
+      </tr>
+
+      <tr>
+         <td>Secret</td>
+         <td>This is a secret UUID that is used to <a href="#webhook-authentication">authenticate Supremote's webhook requests.</a></td>
+      </tr>
+
+      <tr>
+         <td>Development Mode Enabled</td>
+         <td>If this property is enabled, Supremote will accept websocket connections from any origin. If it is disabled, it will only accept connections from the allowed origins whitelist.</td>
+      </tr>
+
+   </table>
+
+   <h3 id="fields" class="anchor">The <code>fields</code> Object</h3>
+   <p>
+   This object is populated by one or more JSON sub objects. Their JSON property name is used across the platform to identify its value, or, in the case of an action, the name of the action. There are several types of <code>fields</code>, each one requiring a different set of properties. These are the properties that are required of all <code>fields</code>:
+   <h5>Properties Required By All Fields</h5>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Property Key</th>
+         <th>Expected Value(s)</th>
+         <th>Required?</th>
+         <th>Description</th>
+      </tr>
+      
+      <tr>
+         <td><code>type</code></td>
+         <td>
+            One of:
+            <ul class="list-unstyled">
+               <li><code>"action"</code></li>
+               <li><code>"text"</code></li>
+               <li><code>"boolean"</code></li>
+               <li><code>"multiple"</code></li>
+               <li><code>"number"</code></li>
+            </ul>
+         </td>
+         
+         <td><b>Yes</b></td>
+         <td>The value of this property determines in which way this field will be rendered. Each <code>type</code> value requires different properties.</td>
+      </tr>
+      <tr>
+         <td><code>title</code></td>
+         <td>A Unicode string.</td>
+         <td><b>Yes</b></td>
+         <td>The main text displayed in this field. In the case of an <code>action</code>, it is the text inside the button. In any other case, it is displayed in a prominent position next to the corresponding field's widget.</td>
+      </tr>
+   </table>
+   <hr>
+   <h4 id="action-fields" class="anchor">Action Fields</h4>
+   <p>
+   This type of field is rendered as a button on all platforms. When a user presses said button, the client application will be notified. If the field has an <code>endpoint</code> property set, Supremote will send a webhook request to said <code>endpoint</code>. In the case it is not set, the webhook will instead be sent to the parent remote's endpoint URL. In the case none of them are set, no webhook will be sent at all.
+   </p>
+   <h5>Properties Accepted by Action Fields</h5>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Property Key</th>
+         <th>Expected Value(s)</th>
+         <th>Required?</th>
+         <th>Description</th>
+      </tr>
+      
+      <tr>
+         <td><code>class</code></td>
+         <td>
+            One of:
+            <ul class="list-unstyled">
+               <li><code>"danger"</code></li>
+               <li><code>"warning"</code></li>
+               <li><code>"success"</code></li>
+               <li><code>"primary"</code></li>
+               <li><code>"info"</code></li>
+               <li><code>"default"</code></li>
+            </ul>
+         </td>
+         <td><b>Yes</b></td>
+         <td>
+            The value of this property sets the color that the corresponding action's button will have. The colors are described in the table below.
+         </td>
+      </tr>
+      <tr>
+         <td><code>throttle</code></td>
+         <td>
+            A positive integer, including 0.
+         </td>
+         <td><b>Yes</b></td>
+         <td>
+            This is the number of seconds that a user will have to wait before an action is triggered by Supremote.
+         </td>
+      </tr>
+      <tr>
+         <td><code>endpoint</code></td>
+         <td>
+            A URL, starting with <code>http</code> or <code>https</code>
+         </td>
+         <td>No</td>
+         <td>
+            The URL to where a webhook request will be sent upon triggering of this action.
+         </td>
+      </tr>
+   </table>
+   <h5><code>class</code> Colors</h5>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th><code>class</code> Value</th>
+         <th>Color</th>
+      </tr>
+      <tr>
+         <td><code>danger</code></td>
+         <td>
+            <button class="btn btn-block btn-danger">
+            Red
+            </button>
+         </td>
+      </tr>
+      <tr>
+         <td><code>warning</code></td>
+         <td>
+            <button class="btn btn-block btn-warning">
+            Yellow
+            </button>
+         </td>
+      </tr>
+      <tr>
+         <td><code>success</code></td>
+         <td>
+            <button class="btn btn-block btn-success">
+            Green
+            </button>
+         </td>
+      </tr>
+      <tr>
+         <td><code>primary</code></td>
+         <td>
+            <button class="btn btn-block btn-primary">
+            Blue
+            </button>
+         </td>
+      </tr>
+      <tr>
+         <td><code>info</code></td>
+         <td>
+            <button class="btn btn-block btn-info">
+            Sky Blue
+            </button>
+         </td>
+      </tr>
+      <tr>
+         <td><code>default</code></td>
+         <td>
+            <button class="btn btn-block btn-default">
+            Gray
+            </button>
+         </td>
+      </tr>
+      
+   </table>
+   <h5>Examples</h5>
+   <p>
+   This action, named "reset", will be rendered as a yellow button, and upon pressing, it will send a webhook request to <code>http://www.example.com/process_reset/</code>. This action can be triggered every 5 minutes (300 seconds).
+   </p>
+   <div class="row">
+      <div class="col-sm-6"><h5>Code</h5>
+<pre>
+"reset": {
+   "type": "action",
+   "class": "warning",
+   "title": "Reset Server",
+   "endpoint": "http://www.example.com/process_reset/",
+   "throttle": 300
+}</pre>
+      </div>
+      <div class="col-sm-6"><h5>Result</h5>
+         <img src="{% static 'img/docs/action.reset.png' %}" alt="" class="img img-responsive img-thumbnail">
+      </div>
+   </div>
+   <p>
+   This action, named "backup", will be rendered as a red button, and upon pressing, it will send a webhook request to <code>http://www.example.com/process_backup/</code>. It can only be triggered once every day (86,400 seconds). It also has a <code>description</code> property that further clarifies its purpose.
+   </p>
+   <div class="row">
+      <div class="col-sm-6"><h5>Code</h5>
+        <pre>
+"backup": {
+   "type": "action",
+   "class": "danger",
+   "title": "Backup Database",
+   "endpoint": "http://www.example.com/process_backup/",
+   "description": "Does a full backup of all the database tables, compresses it, and stores it in the backup server.",
+   "throttle": 86400
+}</pre>
+      </div>
+      <div class="col-sm-6"><h5>Result</h5>
+         <img src="{% static 'img/docs/action.backup.png' %}" alt="" class="img img-responsive img-thumbnail">
+      </div>
+   </div>
+   <hr>
+   <h4 id="text-fields" class="anchor">Text Fields</h4>
+   <p>
+   This type of field is rendered as a textbox on all platforms. It accepts Unicode input, and features a <code>maxLength</code> property and a <code>default</code> property, explained below:
+   </p>
+   <h5>Properties Accepted by Text Fields</h5>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Property Key</th>
+         <th>Expected Value(s)</th>
+         <th>Required?</th>
+         <th>Description</th>
+      </tr>
+      <tr>
+         <td><code>maxLength</code></td>
+         <td>A positive integer.</td>
+         <td><b>Yes</b></td>
+         <td>A text input longer than <code>maxLength</code> will not be accepted by Supremote.</td>
+      </tr>
+      <tr>
+         <td><code>default</code></td>
+         <td>A Unicode string</td>
+         <td><b>Yes</b></td>
+         <td>
+            The initial value this field will have upon creation.
+         </td>
+      </tr>
+   </table>
+   <h5>Examples</h5>
+   <p>
+   This field named <code>"hostname"</code> will be rendered as a textbox, accepting up to 255 unicode characters, with a defaut value of <code>"myHostname"</code>
+   </p>
+   <div class="row">
+      <div class="col-sm-6"><h5>Code</h5>
+       <pre>
+"hostname": {
+   "type": "text",
+   "title": "Hostname",
+   "maxLength": 255,
+   "default": "myHostname",
+   "description": "Sets the server's hostname."
+}
+</pre>
+      </div>
+      <div class="col-sm-6"><h5>Result</h5>
+         <img src="{% static 'img/docs/text.hostname.png' %}" alt="" class="img img-responsive img-thumbnail">
+      </div>
+   </div>
+   <hr>
+   <h4 id="boolean-fields" class="anchor">Boolean Fields</h4>
+   <p>
+   This type of field is rendered as a checkbox on the web platform, and as a switch on mobile platforms. It can either be <code>true</code> or <code>false</code>
+   </p>
+   <h5>Properties Accepted by Boolean Fields</h5>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Property Key</th>
+         <th>Expected Value(s)</th>
+         <th>Required?</th>
+         <th>Description</th>
+      </tr>
+      <tr>
+         <td><code>default</code></td>
+         <td>A boolean value: <code>true</code> or <code>false</code>.</td>
+         <td><b>Yes</b></td>
+         <td>The initial value this field will have upon creation.</td>
+      </tr>
+   </table>
+   <h5>Examples</h5>
+   <p>
+   This field named <code>"newRegistrationsEnabled"</code> will be rendered as a checkbox, with a default value of <code>true</code>
+   </p>
+   <div class="row">
+      <div class="col-sm-6"><h5>Code</h5>
+            <pre>
+"newRegistrationsEnabled": {
+   "type": "boolean",
+   "title": "New Registrations Enabled",
+   "default": true,
+   "description": "Closes or opens new registrations on the web app."
+}
+</pre>
+      </div>
+      <div class="col-sm-6"><h5>Result</h5>
+         <img src="{% static 'img/docs/boolean.newreg.png' %}" alt="" class="img img-responsive img-thumbnail">
+      </div>
+   </div>
+   <hr>
+   <h4 id="multiple-choice-fields" class="anchor">Multiple-Choice Fields</h4>
+   <p>
+   This type of field is rendered as a dropdown box on all platforms. It defines an array of discrete text <code>choices</code>, and a <code>default</code> value based on one of those choices.
+   </p>
+   <h5>Properties Accepted By Multiple-Choice Fields</h5>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Property Key</th>
+         <th>Expected Value(s)</th>
+         <th>Required?</th>
+         <th>Description</th>
+      </tr>
+      <tr>
+         <td><code>choices</code></td>
+         <td>An array of Unicode strings.</td>
+         <td><b>Yes</b></td>
+         <td>A list of discrete choices that this field will have. They will appear in the same order as listed in this array.</td>
+      </tr>
+      <tr>
+         <td><code>default</code></td>
+         <td>A Unicode string.</td>
+         <td><b>Yes</b></td>
+         <td>This string must be exactly the same as one of the elements of this field's <code>choices</code> array.</td>
+      </tr>
+   </table>
+   <h5>Examples</h5>
+   <p>
+   This field named <code>"websiteTheme"</code> declares an array of 4 different choices, with a default of <code>"Corporate Blue"</code>
+   </p>
+   <div class="row">
+      <div class="col-sm-6"><h5>Code</h5>
+            <pre>
+"websiteTheme": {
+   "type": "multiple",
+   "title": "Website Theme",
+   "choices": ["Angry Red", "Corporate Blue", "Medicinal Green", "Sickenin' Pink"],
+   "default": "Corporate Blue"
+}
+</pre>
+      </div>
+      <div class="col-sm-6"><h5>Result</h5>
+         <img src="{% static 'img/docs/multiple.theme.png' %}" alt="" class="img img-responsive img-thumbnail">
+         <img src="{% static 'img/docs/multiple.theme.choices.png' %}" alt="" class="img img-responsive img-thumbnail">
+      </div>
+   </div>
+   <hr>
+   <h4 id="number-fields" class="anchor">Number Fields</h4>
+   <p>
+   This field is rendered as a dropdown box. It accepts a <code>range</code> of positive integers and a <code>default</code> value that falls within that range.
+   </p>
+   <h5>Properties Accepted By Number Fields</h5>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Property Key</th>
+         <th>Expected Value(s)</th>
+         <th>Required?</th>
+         <th>Description</th>
+      </tr>
+      <tr>
+         <td><code>range</code></td>
+         <td>An array of two integers.</td>
+         <td><b>Yes</b></td>
+         <td>The range of choices generated by this field is inclusive in both the lower and upper limit. The value at the first position of the array must be lower than the one at the second position.</td>
+      </tr>
+      <tr>
+         <td><code>default</code></td>
+         <td>An integer</td>
+         <td><b>Yes</b></td>
+         <td>This number must be in the <code>range</code> defined by this field. (inclusive)</td>
+      </tr>
+   </table>
+   <h5>Examples</h5>
+   <p>
+   This field named <code>"workerThreadCount"</code> sets an acceptable range of <code>[1, 10]</code>, with a default value of <code>4</code>.
+   </p>
+   <div class="row">
+      <div class="col-sm-6"><h5>Code</h5>
+            <pre>
+"workerThreadCount": {
+   "type": "number",
+   "title": "Server Worker Threads",
+   "range": [1, 10],
+   "default": 4
+}
+</pre>
+      </div>
+      <div class="col-sm-6"><h5>Result</h5>
+         <img src="{% static 'img/docs/number.workers.png' %}" alt="" class="img img-responsive img-thumbnail">
+         <img src="{% static 'img/docs/number.worker.choices.png' %}" alt="" class="img img-responsive img-thumbnail">
+      </div>
+   </div>
+   <hr>
+   </p>
+   <h3 id="fieldsets" class="anchor">The <code>fieldsets</code> Object</h3>
+   <p>
+   This object represents a collection of fields that have already been declared in  <a href="#fields">the <code>fields</code> object</a>. Syntactically, it is a JSON array, and should only contain <code>object</code>s with the following properties:
+   </p>
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Property Key</th>
+         <th>Expected Value(s)</th>
+         <th>Required?</th>
+         <th>Description</th>
+      </tr>
+      <tr>
+         <td><code>title</code></td>
+         <td>A Unicode string.</td>
+         <td><b>Yes</b></td>
+         <td>The name of the fieldset as it will appear to the end user.</td>
+      </tr>
+      <tr>
+         <td><code>fields</code></td>
+         <td>An array of strings</td>
+         <td><b>Yes</b></td>
+         <td>The strings inside of this array must only be names of properties of the <code>fields</code> object. </td>
+      </tr>
+      <tr>
+         <td><code>helpText</code></td>
+         <td>A Unicode string</td>
+         <td>No</td>
+         <td>A text string meant to explain the purpose of this <code>fieldset</code>s content. It will be rendered in the footer of the given <code>fieldset</code>.</td>
+      </tr>
+   </table>
+  <p>
+      Because <code>fieldsets</code> is an array, the order in which the individual <code>fieldsets</code> are declared, is the same order in which they will be rendered. The same applies to the <code>fields</code> array within each <code>fieldset</code>.
+   </p>
+
+   <h4>Examples</h4>
+   <p>
+      An example fieldset, with hypothetical fieldA, fieldB, and fieldC fields
+   </p>
+   <pre>
+{
+   "title": "Example Fieldset",
+   "fields": ["fieldB", "fieldA", "fieldC"],
+   "helpText": "Each fieldset's helpText is optional."
+}
+</pre>
+
+<h3 id="full-example" class="anchor">Full Example</h3>
+   <p>
+      A full example of a remote configuration file.
+   </p>
+   <div class="row">
+      <div class="col-sm-6">
+         <h5>Code</h5>
+<pre>
+{
+   "fieldsets":[
+      {
+         "title":"Header",
+         "fields":[
+            "mainHeader"
+         ],
+         "helpText":"The changes will be reflected immediately on the web page and/or server."
+      },
+      {
+         "title":"Delicious Fruit",
+         "fields":[
+            "fruit"
+         ]
+      },
+      {
+         "title":"Fonts",
+         "fields":[
+            "colorSectionEnabled",
+            "font",
+            "fontColor",
+            "fontSize"
+         ],
+         "helpText":"You can enable/disable this section at any time"
+      },
+      {
+         "title":"Multiplication Tables",
+         "fields":[
+            "table",
+            "limit"
+         ]
+      }
+   ],
+   "fields":{
+      "mainHeader":{
+         "type":"text",
+         "title":"Main Header",
+         "default":"Supremote Test",
+         "maxLength":200
+      },
+      "fruit":{
+         "type":"multiple",
+         "title":"Fruit Displayed",
+         "choices":[
+            "Apple",
+            "Grape",
+            "Pear",
+            "Pineapple"
+         ],
+         "default":"Apple"
+      },
+      "colorSectionEnabled":{
+         "type":"boolean",
+         "title":"Section Enabled",
+         "default":false
+      },
+      "fontColor":{
+         "type":"multiple",
+         "title":"Font Color",
+         "choices":[
+            "Red",
+            "Black",
+            "Blue"
+         ],
+         "default":"Black"
+      },
+      "fontSize":{
+         "type":"number",
+         "title":"Font Size",
+         "range":[
+            10,
+            60
+         ],
+         "default":14
+      },
+      "font":{
+         "type":"multiple",
+         "title":"Font",
+         "choices":[
+            "Helvetica",
+            "Times",
+            "Comic Sans / Cursive",
+            "Courier"
+         ],
+         "default":"Helvetica"
+      },
+      "table":{
+         "type":"number",
+         "title":"Table",
+         "range":[
+            1,
+            20
+         ],
+         "default":5
+      },
+      "limit":{
+         "type":"number",
+         "title":"Limit",
+         "range":[
+            10,
+            100
+         ],
+         "default":10
+      }
+   }
+}</pre>
+      </div>
+      <div class="col-sm-6">
+         <h5>Result (Web)</h5>
+         <img src="{% static 'img/docs/fieldsets.png' %}" alt="" class="img img-responsive img-thumbnail">
+         <h5>Result (iOS)</h5>
+         <img src="{% static 'img/docs/fieldset.ios.png' %}" alt="" class="img img-responsive img-thumbnail">
+      </div>
+   </div>
+
+   
+{% endblock tutorial_content %}
