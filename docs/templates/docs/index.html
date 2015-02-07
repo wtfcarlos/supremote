@@ -33,8 +33,32 @@
             <li><a href="#full-example">Full Example</a></li>
          </ul>
       </li>
+      <li>
+      <a href="#notification-mechanisms">Notification Mechanisms</a>
+      <ul>
+         <li>
+            <a href="#webhooks">Webhooks</a>
+            <ul>
+               <li><a href="#update-notifications">Update Notifications</a></li>
+               <li><a href="#action-notifications">Action Notifications</a></li>
+               <li><a href="#authenticating-webhook-requests">Authenticating Webhook Requests</a></li>
+            </ul>
+         </li>
+         <li>
+            <a href="#socketio">socket.io</a>
+            <ul>
+               <li><a href="#setup">Setup</a></li>
+               <li><a href="#receiving-live-updates">Receiving Live Updates</a></li>
+               <li><a href="#receiving-live-actions">Receiving Live Actions</a></li>
+               <li><a href="#origin-whitelist">Origin Whitelist</a></li>
+               <li><a href="#development-mode">Development Mode</a></li>
+            </ul>
+         </li>
+      </ul>
+      </li>
       
    </ol>
+   <hr>
    <h2 id="introduction" class="anchor">Introduction</h2>
    <p>
    Supremote is a platform that allows you to define a "remote" (user interface) that notifies your applications when the user performs an action or changes a value.
@@ -43,7 +67,7 @@
    You can use Supremote for virtually any kind of action / setting that your application or server requires. You could use Supremote to quickly change an online tax application's global tax rate, to enable / disable your site's debug mode at the touch of a switch - Really, anything that you can do by logging in on a shell and / or changing source code.
    </p>
    <p>
-   Supremote communicates with your server using two different mechanisms, <b>web sockets</b> and <b>web hooks</b>. You can also consult your remote's current values using a simple <b>REST API</b>.
+   Supremote communicates with your server using two different mechanisms, <a href="#socketio"><b>socket.io</b></a> and <a href="#webhooks"><b>web hooks</b></a>. You can also read your remote's current values using a simple <b>REST API</b>.
    </p>
    <h2 id="remotes" class="anchor">Remotes</h2>
    <hr>
@@ -91,7 +115,7 @@
 
       <tr>
          <td>Secret</td>
-         <td>This is a secret UUID that is used to <a href="#webhook-authentication">authenticate Supremote's webhook requests.</a></td>
+         <td>This is a secret UUID that is used to <a href="#authenticating-webhook-requests">authenticate Supremote's webhook requests.</a></td>
       </tr>
 
       <tr>
@@ -509,7 +533,7 @@
    "helpText": "Each fieldset's helpText is optional."
 }
 </pre>
-
+<hr>
 <h3 id="full-example" class="anchor">Full Example</h3>
    <p>
       A full example of a remote configuration file.
@@ -632,6 +656,326 @@
          <img src="{% static 'img/docs/fieldset.ios.png' %}" alt="" class="img img-responsive img-thumbnail">
       </div>
    </div>
+   <hr>
+   <h2 id="notification-mechanisms" class="anchor">Notification Mechanisms</h2>
+   <p>
+      Supremote currently supports two notification mechanisms for your applications: <a href="#webhooks">webhooks</a> and <a href="#websockets">websockets</a>
+   </p>
 
+   <p>
+      Notification events are sent by Supremote to client applications when either of these conditions are met:
+      <ul>
+         <li>A field's value on a remote is changed by the user.</li>
+         <li>An action field button is pressed by the user within the action's<code>throttle</code> property.</li>
+      </ul>
+   </p>
+
+   <h3 id="webhooks" class="anchor">Webhooks</h3>
+
+   <p>
+      A Webhook is a "user-defined HTTP callback". When a notification event needs to be sent, Supremote prepares an HTTP POST request and sends it to the remote's Endpoint setting. In the case of an action, it first checks if the action field itself has an <code>endpoint</code> setting. If it does, it sends the request there. Otherwise, the request is sent to the remote's endpoint setting, if set. If not set, the request will not be sent at all.
+   </p>
+
+   <p>
+      There are two types of webhook notifications sent by Supremote: <b>update</b> notifications and <b>action</b> notifications. All webhook notifications are JSON-encoded.
+   </p>
+
+   <h4 id="update-notifications" class="anchor">Update Notifications</h4>
+
+   <p>
+      An update notification contains the following information it its request body:
+   </p>
+
+      <ul>
+         <li>The remote's current values</li>
+         <li>The update date and time.</li>
+         <li>The remote's key</li>
+         <li>The email of the Supremote user that triggered that request.</li>
+      </ul>
+
+   <h5>Example</h5>
+   <p>This is an example update notification request body sent by the remote defined by the <a href="#full-example">full example JSON configuration</a> shown above.</p>
+
+   <pre>
+{
+   "data":{
+      "mainHeader":"Supremote Test",
+      "fontColor":"Red",
+      "fruit":"Apple",
+      "limit":86,
+      "colorSectionEnabled":true,
+      "table":1,
+      "fontSize":26,
+      "font":"Times"
+   },
+   "updated":"2015-02-06 21:03:08.482554+00:00",
+   "remote_key":"general-example",
+   "user":"user@example.com"
+}
+</pre>
+
+<p>
+   The remote's current values are stored as properties of the outer <code>data</code> JSON object. All the other pieces of information that are sent are properties of the root JSON object as siblings of the <code>data</code> itself.
+</p>
+
+<h4 id="action-notifications" class="anchor">Action Notifications</h4>
+
+<p>
+   An action notification contains the following information in its request body:
+</p>
+
+   <ul>
+      <li>The triggered action's field name.</li>
+      <li>The triggering date and time.</li>
+      <li>The triggering remote's key</li>
+      <li>The email of the Supremote user that triggered the request.</li>
+   </ul>
+
+   <h5>Example</h5>
+   <p>
+      This is an example action notification request body sent by a remote that has a <a href="#action-fields"><code>backup</code> action</a> defined in its configuration file.
+   </p>
+   <pre>
+{
+   "data":{
+      "triggered":"2015-02-06 21:19:40.210144+00:00",
+      "action_id":"backup"
+   },
+   "remote_key":"action-example",
+   "user":"user@example.com"
+}
+</pre>
+
+<h4 id="authenticating-webhook-requests" class="anchor">Authenticating Webhook Requests</h4>
+<p>
+   It's very easy for anyone to forge an action or update notification and force your server to do things that you don't want to do.
+</p>
+
+<p>
+   Supremote uses <a href="http://en.wikipedia.org/wiki/Hash-based_message_authentication_code">HMAC (Hash-based message authentication code)</a> to sign every webhook request that is sent to your server. You <b>must</b> authenticate each request that claims to be from Supremote before performing any kind of action on your server or web application.
+</p>
+
+<p>
+   Every webhook request comes with two special HTTP headers that are necessary to authenticate itself. You should not process any webhook request that does not come with these two headers.
+</p>
+
+   <table class="table table-responsive table-striped text-left">
+      <tr>
+         <th>Header</th>
+         <th>Expected Value(s)</th>
+         <th>Description</th>
+      </tr>
+      
+      <tr>
+         <td>X-Supremote-Transaction-Id</td>
+         <td>A random UUID</td>
+         <td>This UUID uniquely identifies this and only this Supremote webhook request.</td>
+      </tr>
+
+      <tr>
+         <td>X-Supremote-Signature</td>
+         <td>A 160 bit hex number.</td>
+         <td>This signature is generated by the server using this request's transaction id and this request's body and <a href="#post-creation-properties">your remote's secret.</a></td>
+      </tr>
+
+   </table>
+
+   <p>
+      To authenticate an incoming Supremote webhook request, follow these steps:
+      <ol>
+         <li>Check for the existence of the <code><b>X-Supremote-Transaction-Id</b></code> and <code><b>X-Supremote-Signature</b></code> headers.</li>
+         <li>Concatenate the request's <b>raw</b> body with the value of the <code><b>X-Supremote-Transaction-Id</b></code> header.</li>
+         <li>Digest it using <b>HMAC</b>, using your <b>remote's secret</b> as the key, and <b>SHA1</b> as the hash algorithm.</li>
+         <li>Check that the result of the last operation matches the value of the <code><b>X-Supremote-Signature</b></code> header. If it does, the request is authentic.</li>
+      </ol>
+   </p>
+
+<h5>Examples</h5>
+
+<p>
+   These examples illustrate how to authenticate an incoming Supremote webhook request in some selected languages.
+</p>
+
+<h5>Python (Django)</h5>
+<pre>
+from django.http import HttpResponse, HttpResponseForbidden
+import hashlib
+import hmac
+
+def PerformActionView(request):
+   remote_secret = '0b07b0e1-7f55-4eb9-b59c-7804027e39dd'
+   transaction_id = request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID']
+   signature = request.META['HTTP_X_SUPREMOTE_SIGNATURE']
+
+   if request.method == "POST":
+      signature_maker = hmac.new(remote_secret, '', hashlib.sha1)
+      signature_maker.update(request.body)
+      signature_maker.update(transaction_id)
+
+      if signature_maker.hexdigest() == signature:
+         print 'This request is authentic.'
+         perform_action()
+         return HttpResponse()
+      else:
+         print 'This request is not authentic.'
+
+   return HttpResponseForbidden()
+</pre>
+<h5>PHP</h5>
+<pre>
+&lt;?php
+
+   if($_SERVER["REQUEST_METHOD"] == "POST") {
+
+      $remoteSecret = "0b07b0e1-7f55-4eb9-b59c-7804027e39dd";
+      $transactionId = $_SERVER["HTTP_X_SUPREMOTE_TRANSACTION_ID"];
+      $signature = $_SERVER["HTTP_X_SUPREMOTE_SIGNATURE"];
+      $requestBody = $HTTP_RAW_POST_DATA;
+
+      $message = $requestBody . $transactionId;
+
+      $calculatedSignature = hash_hmac("sha1", $message, $remoteSecret);
+
+      if ($calculatedSignature == $signature) {
+         echo "This request is authentic.";
+      } else {
+         echo "This request is not authentic.";
+      }
+
+   }
+
+?&gt;
+</pre>
+<hr>
+<h3 id="socketio" class="anchor">socket.io</h3>
+
+<p>
+   Supremote implements a simple <a href="http://socket.io">socket.io</a> interface to notify your web applications using Javascript.
+</p>
+
+<p>
+   Instead of sending HTTP requests, Supremote uses socket.io to achieve live notification to client applications using a simple evented approach.
+</p>
+
+<h4 id="setup" class="anchor">Setup</h4>
+
+<p>
+   Create a new socket.io socket and point it to <code>https://www.supremote.com</code>
+</p>
+
+<pre>
+var socket = io("https://www.supremote.com");
+</pre>
+
+<p>
+   Listen to the <code>connect</code> event. When you receive the event, emit a <code>join</code> event and send the remote key you would like to connect to as the second argument.
+</p>
+
+<pre>
+socket.on('connect', function(data) {
+   socket.emit('join', 'remote-key');
+});
+</pre>
+
+<p>
+   Although the communication channel that is created between the application and the server is full-duplex, only Supremote emits events. The only time you can emit an event to Supremote is when you request to <code>join</code> your remote's room.
+</p>
+
+<p>
+   If your application could successfully connect to your remote's room, Supremote will emit a <code>join</code> event. With it, your remote's current status will be first delivered in the <code>data</code> argument.
+</p>
+
+<pre>
+socket.on('join', function(data) {
+   // data contains your remote's current values as a JSON object.
+   doSomethingWith(data);
+});
+</pre>
+
+<h4 id="receiving-live-updates" class="anchor">Receiving Live Updates</h4>
+
+<p>
+   Supremote emits an <code>update</code> event whenever a value on the remote changes. The <code>data</code> argument contains your newest remote state as a JSON object.
+</p>
+
+<pre>
+socket.on('update', function(data) {
+   // data contains your remote's newest values as a JSON object.
+});
+</pre>
+
+<h4 id="receiving-live-actions" class="anchor">Receiving Live Actions</h4>
+
+<p>
+   The name of the event Supremote emits whenever an action button is pressed is the name of the action field's property name prefixed with a hash symbol <code>#</code>. This is done to avoid any potential name clashes with both Supremote's and socket.io's reserved event names.
+</p>
+
+<h5>Example</h5>
+
+<p>Take for instance, this simple remote configuration:</p>
+
+<pre>
+{
+   "fieldsets": [
+      {
+         "title": "Fieldset",
+         "fields": ["reset"]
+      }
+   ],
+   "fields": {
+      "reset": {
+         "type": "action",
+         "class": "danger",
+         "title": "Reset",
+         "throttle": 5
+      }
+   }
+}
+</pre>
+
+<p>
+   The configuration above declares a single action: <code>reset</code>. The event that Supremote will emit when this action is triggered is: <code>#reset</code>.
+</p>
+
+<pre>
+socket.on('#reset', function(data) {
+   console.log("Resetting the Application!");
+});
+</pre>
+
+<p>
+   The <code>data</code> argument to this event listener will also contain the remote's current values as a JSON object.
+</p>
+
+<h4 id="origin-whitelist" class="anchor">Origin Whitelist</h4>
+
+<p>
+   By default, Supremote will only allow domains that you have specified to connect to its socket.io interface. If a domain that you have not whitelisted tries to connect to your remote's room, a <code>status</code> update is emmited by the server with a message that specifies why the connection was refused before closing the connection.
+</p>
+
+<pre>
+socket.on('status', function(message) {
+   // Add an event listener for status just in case.
+   console.log(message);
+});
+</pre>
+
+<p>
+   If we tried to connect using the snippets above from a non-whitelisted domain, the <code>status</code> event message would read:
+</p>
+
+<pre class="nohighlight">
+This origin is not allowed: example.com. Closing connection now.
+</pre>
+
+<h4 id="development-mode" class="anchor">Development Mode</h4>
+
+<p>
+   Every remote has a <b>development mode</b> setting which, if enabled, grants access to that remote's socket.io interface to any domain, including local hosts. If this is the case, Supremote will also emit a <code>status</code> update with a message reminding you that this feature is for development purposes only:
+</p>
+
+<pre class="nohighlight">
+This remote is setup to accept connections from any origin. This is alright for development purposes, but you should not be seeing this in a production environment.
+</pre>
    
 {% endblock tutorial_content %}

@@ -3,7 +3,7 @@
 {% load staticfiles %}
 
 {% block header %}
-    Traffic Light Websocket Tutorial (Part Two)
+    Socket.io Traffic Light Tutorial (Part Two)
 {% endblock header %}
 
 {% block tutorial_content %}
@@ -260,7 +260,7 @@ socket.on('join', function(data) {
    </p>
 
    <p>
-      Remember that Supremote doesn't only notify you of remote events via web sockets, it also supports a <a href="">REST Webhooks</a> interface, so you can also hook up data and actions to any server that's connected to the internet.
+      Remember that Supremote doesn't only notify you of remote events via web sockets, it also supports a <a href="{% url 'docs:index' %}#webhooks">REST Webhooks</a> interface, so you can also hook up data and actions to any server that's connected to the internet.
    </p>
 
 {% endblock tutorial_content %}
