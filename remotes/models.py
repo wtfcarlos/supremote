@@ -127,19 +127,25 @@ class Remote(TimeStampedModel):
 		if not self.pk:
 			self.secret = uuid.uuid4()
 
+		# Sync allow all origins with redis.
 		conn = get_redis_connection('default')
 		conn.set(self.get_allow_all_key(), int(self.allow_all_origins))
 
-		ret = super(Remote, self).save(*args, **kwargs)
+		self.sync_values()
 
-		# Save default values
+		# Save the object - we're done.
+		return super(Remote, self).save(*args, **kwargs)
+
+	def sync_values(self):
+		# Makes sure the values are properly synced up on cache.
 		configuration_json = json.loads(self.configuration)
+		fields = configuration_json["fields"]
 
 		# Get cached values and types
 		values = self.get_values()
 		types = self.get_types()
 
-		for key, field in configuration_json["fields"].iteritems():
+		for key, field in fields.iteritems():
 			# If the field is not an action
 			if field["type"] != "action":
 				# Get the default value and the type as per the JSON conf.
@@ -158,10 +164,13 @@ class Remote(TimeStampedModel):
 					cached_value = values.get(key, default_value)
 					values[key] = cached_value
 
+		removed_keys = set(values.keys()) - set(fields.keys())
+
+		for key in removed_keys:
+			values.pop(key)
+
 		self.save_values(values)
 		self.save_types(types)
-
-		return ret
 
 	def emit_socket_event(self, event_type, action_name=None):
 		socket_emit_url = 'http://localhost:9000/private/io/emit/'
