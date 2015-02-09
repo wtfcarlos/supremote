@@ -31,46 +31,6 @@ from invitations import models as invitations
 from . import forms
 from . import util
 
-@csrf_exempt
-def TestActionReceiveView(request):
-	import hmac
-	remote_secret = '32365bf6-b25d-4be1-968b-d51c23a4a02f'
-
-	print 'REQUEST SIGNATURE: {}'.format(request.META['HTTP_X_SUPREMOTE_SIGNATURE'])
-	print 'TRANSACTION ID: {}'.format(request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID'])
-	
-	transaction_id = request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID']
-
-	signature_maker = hmac.new(str(remote_secret), '', hashlib.sha1)
-	signature_maker.update(request.body)
-	signature_maker.update(transaction_id)
-
-	print 'CALCULATED SIGNATURE: {}'.format(
-		signature_maker.hexdigest()
-	)
-
-	return HttpResponse()
-
-@csrf_exempt
-def TestEndpointProcessView(request):
-	import hmac
-	remote_secret = '32365bf6-b25d-4be1-968b-d51c23a4a02f'
-
-	print 'REQUEST SIGNATURE: {}'.format(request.META['HTTP_X_SUPREMOTE_SIGNATURE'])
-	print 'TRANSACTION ID: {}'.format(request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID'])
-	
-	transaction_id = request.META['HTTP_X_SUPREMOTE_TRANSACTION_ID']
-
-	signature_maker = hmac.new(str(remote_secret), '', hashlib.sha1)
-	signature_maker.update(request.body)
-	signature_maker.update(transaction_id)
-
-	print 'CALCULATED SIGNATURE: {}'.format(
-		signature_maker.hexdigest()
-	)
-
-	return HttpResponse()
-
 
 class TermsAndConditionsView(generic.TemplateView):
 	template_name = "core/terms.html"
