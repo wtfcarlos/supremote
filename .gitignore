@@ -5,4 +5,4 @@
 /sockets/node_modules
 /sockets/*.log
 /node_modules
-/settings/production.py
+production.py
