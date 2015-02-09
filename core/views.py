@@ -41,26 +41,44 @@ class PrivacyView(generic.TemplateView):
 class SupremoteLoginRequiredMixin(LoginRequiredMixin):
 	login_url = reverse_lazy("core:index")
 
-class AuthorizedRemoteLoginRequiredMixin(LoginRequiredMixin):
+class RemoteAuthorizationMixin(LoginRequiredMixin):
 
 	def get_app_user(self, user):
 		app_user = users.User.objects.get(auth_user=user)
-		return app_user
+		return app_user 
 
 	def get_remote(self):
 		# Override if necessary.
 		return self.get_object()
 
+	def user_is_authorized(self):
+		# Return whether this user is authorized to see this view.
+		return True
+
 	def dispatch(self, request, *args, **kwargs):
-		app_user = self.get_app_user(request.user)
-		remote = self.get_remote()
-		if app_user in remote.users.all() or app_user == remote.developer:
-			return super(AuthorizedRemoteLoginRequiredMixin, self).dispatch(request, *args, **kwargs)
+		if self.user_is_authorized():
+			return super(RemoteAuthorizationMixin, self).dispatch(request, *args, **kwargs)
 		else:
 			return HttpResponseForbidden()
 
-class RedirectIfLoggedInViewMixin(object):
 
+class RemoteCreatorOrUserAuthorizationMixin(RemoteAuthorizationMixin):
+	# Allows access to the remote's creator or someone the remote has been shared with.
+	def user_is_authorized(self):
+		app_user = self.get_app_user(self.request.user)
+		remote = self.get_remote()
+		return app_user in remote.users.all() or app_user == remote.developer
+
+	
+class RemoteCreatorOnlyAuthorizationMixin(RemoteAuthorizationMixin):
+	# Allows access only to the remote's creator.
+	def user_is_authorized(self):
+		app_user = self.get_app_user(self.request.user)
+		remote = self.get_remote()
+		return app_user == remote.developer
+
+class RedirectIfLoggedInViewMixin(object):
+	# If the user is logged in, will redirect to remote_list
 	def get(self, request, *args, **kwargs):
 		if request.user.is_authenticated():
 			return redirect(reverse('core:remote_list'))
@@ -196,7 +214,7 @@ class ResendInvitationView(SupremoteLoginRequiredMixin, generic.RedirectView):
 		})
 
 
-class RemoteTriggerActionView(AuthorizedRemoteLoginRequiredMixin, generic.detail.DetailView):
+class RemoteTriggerActionView(RemoteCreatorOrUserAuthorizationMixin, generic.detail.DetailView):
 	model = remotes.Remote
 	pk_url_kwarg = 'remote_id'
 	context_object_name = 'remote'
@@ -222,7 +240,7 @@ class RemoteTriggerActionView(AuthorizedRemoteLoginRequiredMixin, generic.detail
 
 
 
-class ManageRemoteOriginsView(AuthorizedRemoteLoginRequiredMixin, generic.detail.SingleObjectMixin, generic.FormView):
+class ManageRemoteOriginsView(RemoteCreatorOnlyAuthorizationMixin, generic.detail.SingleObjectMixin, generic.FormView):
 	
 	template_name = "core/remote_manage_origins.html"
 	model = remotes.Remote
@@ -272,7 +290,7 @@ class RemoteFieldSetItem(object):
 		self.title = title
 		self.help_text = help_text
 
-class RemoteDetailView(AuthorizedRemoteLoginRequiredMixin, generic.detail.DetailView):
+class RemoteDetailView(RemoteCreatorOrUserAuthorizationMixin, generic.detail.DetailView):
 	template_name = "core/remote_view.html"
 
 	model = remotes.Remote
@@ -342,7 +360,7 @@ class RemoteDetailView(AuthorizedRemoteLoginRequiredMixin, generic.detail.Detail
 
 		return context
 
-class ManageUsersRemoteView(SupremoteLoginRequiredMixin, generic.detail.SingleObjectMixin, generic.FormView):
+class ManageUsersRemoteView(RemoteCreatorOnlyAuthorizationMixin, generic.detail.SingleObjectMixin, generic.FormView):
 
 	template_name = "core/remote_manage_users.html"
 
@@ -413,15 +431,16 @@ class CreateRemoteView(SupremoteLoginRequiredMixin, generic.CreateView):
 		messages.success(self.request, "Remote created successfuly.")
 		return super(CreateRemoteView, self).form_valid(form)
 
-class EditRemoteView(SupremoteLoginRequiredMixin, generic.UpdateView):
+class EditRemoteView(RemoteCreatorOnlyAuthorizationMixin, generic.UpdateView):
 	template_name = "core/remote_edit.html"
 	form_class = forms.RemoteEditForm
 	model = remotes.Remote
 	success_url = reverse_lazy('core:remote_list')
 	
 	def get_object(self, queryset=None):
-		remote_id = self.kwargs.pop('remote_id')
-		remote_key = self.kwargs.pop('remote_key')
+		print 'a::{}'.format(self.kwargs)
+		remote_id = self.kwargs.get('remote_id')
+		remote_key = self.kwargs.get('remote_key')
 
 		return remotes.Remote.objects.get(
 			pk=remote_id,
@@ -434,7 +453,7 @@ class EditRemoteView(SupremoteLoginRequiredMixin, generic.UpdateView):
 		return super(EditRemoteView, self).form_valid(form)
 
 
-class DeleteUserRemoteView(SupremoteLoginRequiredMixin, generic.RedirectView):
+class DeleteUserRemoteView(RemoteCreatorOnlyAuthorizationMixin, generic.RedirectView):
 
 	permanent = False
 
@@ -462,7 +481,7 @@ class DeleteUserRemoteView(SupremoteLoginRequiredMixin, generic.RedirectView):
 		})
 
 
-class DeleteOriginView(SupremoteLoginRequiredMixin, generic.DeleteView):
+class DeleteOriginView(RemoteCreatorOnlyAuthorizationMixin, generic.DeleteView):
 	success_url = reverse_lazy('core:remote_manage_origins')
 
 	def get_success_url(self):
@@ -482,7 +501,7 @@ class DeleteOriginView(SupremoteLoginRequiredMixin, generic.DeleteView):
 		messages.success(request, "The origin has been deleted.")
 		return super(DeleteOriginView, self).delete(request, *args, **kwargs)
 
-class DeleteRemoteView(SupremoteLoginRequiredMixin, generic.DeleteView):
+class DeleteRemoteView(RemoteCreatorOnlyAuthorizationMixin, generic.DeleteView):
 	success_url = reverse_lazy('core:remote_list')
 	
 	def post(self, request, *args, **kwargs):
