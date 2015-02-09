@@ -54,7 +54,7 @@ class Invitation(TimeStampedModel):
 			to=[self.to,]
 		)
 
-		message.body = "You have been invited to a supremote!\nPlease follow this link: http://localhost:8111{}".format(self.get_absolute_url())
+		message.body = "You have been invited to a Remote!\nPlease follow this link: https://www.supremote.com{}".format(self.get_absolute_url())
 		
 		message.send()
 
