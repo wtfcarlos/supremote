@@ -1,11 +1,15 @@
+from __future__ import with_statement
 from fabric.api import *
 
-"""
-Base configuration
-"""
-env.project_name = 'supremote'
-env.database_password = ''
-env.path = '/home/django/supremote' % env
 
-def setup():
-	print 'hello'
+env.user = 'root'
+env.hosts = ['supremote.com']
+
+def deploy():
+	code_dir = '/home/django/supremote'
+	with cd(code_dir):
+		run('git pull')
+		run('./manage.py migrate')
+		run('./manage.py collectstatic --noinput')
+		run('service gunicorn restart')
+		run('service node restart')
