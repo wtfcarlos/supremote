@@ -8,10 +8,6 @@ urlpatterns = patterns('',
 
   url(r'^terms/$', views.TermsAndConditionsView.as_view(), name="terms"),
   url(r'^privacy/$', views.PrivacyView.as_view(), name="privacy"),
-
-  url(r'^actions/$', views.TestActionReceiveView, name="actions"),
-  url(r'^endpoint_process/$', views.TestEndpointProcessView, name="test_endpoint"),
-
   url(r'^signup/$', views.SignupView.as_view(), name="signup"),
   url(r'^remotes/$', views.RemoteListView.as_view(), name="remote_list"),
   url(r'^account/$', views.AccountSettingsView.as_view(), name="account_settings"),
