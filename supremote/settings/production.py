@@ -4,14 +4,14 @@ DEBUG = False
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["104.236.86.122", "supremote.com", "www.supremote.com"]
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'supremote',
-        'USER': 'postgres',
-        'PASSWORD': '',
+        'NAME': 'django',
+        'USER': 'django',
+        'PASSWORD': 'sx3p6pkD4s',
         'HOST': 'localhost',  # Set to empty string for localhost.
         'PORT': '',  # Set to empty string for default.
         'CONN_MAX_AGE': 600,  # number of seconds database connections should persist for
@@ -42,6 +42,6 @@ TEMPLATE_DIRS = (
 )
 
 try:
-	from .local import *
+    from .local import *
 except ImportError:
-	pass
+    pass
