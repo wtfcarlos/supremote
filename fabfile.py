@@ -8,7 +8,7 @@ env.hosts = ['supremote.com']
 def deploy():
 	code_dir = '/home/django/supremote'
 	with cd(code_dir):
-	with(shell_env(DJANGO_SETTINGS_MODULE='supremote.settings.production'))
+	with(shell_env(DJANGO_SETTINGS_MODULE='supremote.settings.production')):
 		run('git pull')
 		run('./manage.py migrate')
 		run('./manage.py collectstatic --noinput')
