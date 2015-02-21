@@ -17,6 +17,7 @@ from django.core.validators import URLValidator, RegexValidator
 from django.utils import timezone
 
 from jsonschema import Draft4Validator
+from jsonschema.exceptions import best_match
 from encrypted_fields import EncryptedCharField
 
 from django_redis import get_redis_connection
@@ -350,12 +351,12 @@ class Remote(TimeStampedModel):
 		try:
 			configuration_json = json.loads(self.configuration)
 		except:
-			raise ValidationError("The configuration JSON provided is not valid.")
+			raise ValidationError("The given configuration file is not valid JSON.")
 
-		try:
-			validator.validate(configuration_json)
-		except jsonschema.exceptions.ValidationError as e:
-			raise ValidationError(e)
+		error = best_match(validator.iter_errors(configuration_json))
+
+		if error:
+			raise ValidationError(error.message)
 
 		for key, field in configuration_json["fields"].iteritems():
 			self.validate_field(key, field)
