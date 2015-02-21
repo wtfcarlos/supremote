@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
+{% load staticfiles %}
 {% block content %}
 	<div class="container">
 
@@ -7,8 +8,12 @@
 		<div class="col-sm-12">
 			 <div class="jumbotron">
                 <h1>Universal Configuration, Built for Developers</h1>
-                <p>Supremote is a simple and easy way to create, share, and manage remote configuration panels.</p>
-                <p><a href="{% url 'core:signup' %}" class="btn btn-success btn-lg"><i class="glyphicon glyphicon-check"></i> Sign Up</a></p>
+                <p>Supremote is a simple and easy way to create, share, and manage remote configuration panels accessible from any web browser and your iOS device.</p>
+                <p>
+                	<a href="{% url 'core:signup' %}" class="btn btn-success btn-lg">
+                	<i class="glyphicon glyphicon-check"></i> Sign Up</a>
+                	<a href="https://itunes.apple.com/us/app/supremote/id964443915?mt=8&uo=4" target="itunes_store" style="display:inline-block;overflow:hidden;background:url(https://linkmaker.itunes.apple.com/htmlResources/assets/en_us//images/web/linkmaker/badge_appstore-lrg.png) no-repeat;width:135px;height:40px;@media only screen{background-image:url(https://linkmaker.itunes.apple.com/htmlResources/assets/en_us//images/web/linkmaker/badge_appstore-lrg.svg);}"></a>
+                </p>
               </div>
 		</div>
 	</div>
