@@ -1,5 +1,6 @@
 /.vagrant
 /settings/local.py
+/settings/keys.py
 /static
 *.pyc
 /sockets/node_modules
