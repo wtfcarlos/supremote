@@ -1,4 +1,5 @@
 from .base import *
+from .keys import *
 
 DEBUG = False
 
@@ -9,9 +10,9 @@ ALLOWED_HOSTS = ["104.236.86.122", "supremote.com", "www.supremote.com"]
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'django',
-        'USER': 'django',
-        'PASSWORD': 'sx3p6pkD4s',
+        'NAME': PRODUCTION_DB_NAME,
+        'USER': PRODUCTION_DB_USERNAME,
+        'PASSWORD': PRODUCTION_DB_PASSWORD,
         'HOST': 'localhost',  # Set to empty string for localhost.
         'PORT': '',  # Set to empty string for default.
         'CONN_MAX_AGE': 600,  # number of seconds database connections should persist for
