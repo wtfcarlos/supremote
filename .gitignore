@@ -1,9 +1,9 @@
 /.vagrant
 /settings/local.py
-/settings/keys.py
 /static
 *.pyc
 /sockets/node_modules
 /sockets/*.log
 /node_modules
 production.py
+supremote/settings/keys.py
