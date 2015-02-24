@@ -3,6 +3,7 @@
 import os
 import sys
 
+from . import keys
 
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
 
@@ -66,7 +67,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '@6w3otn1)a_whl%pzr065c21#6s8)^4u!dzv!96gqz-vmtlg57'
+SECRET_KEY = keys.SECRET_KEY
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -181,7 +182,7 @@ CACHES = {
     }
 }
 
-MANDRILL_API_KEY = "NtH9zbLzVF269Nhxkq0qig"
+MANDRILL_API_KEY = keys.MANDRILL_API_KEY
 EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"
 
 SERVER_EMAIL = "reports@supremote.com"
